@@ -223,6 +223,17 @@ test('overview states the practical impact of Chirag’s ML experience', () => {
   assert.match(overview, /5\+ years<\/span> turning machine learning into products people use/);
 });
 
+test('overview includes a philosophy bonus link and articles includes the newest essay', () => {
+  const overview = portfolioClientSource.match(/'README\.md':`([\s\S]*?)`,\n 'about\.md'/)?.[1] || '';
+  const articles = portfolioClientSource.match(/'articles\.md':`([\s\S]*?)`,\n 'experience\.md'/)?.[1] || '';
+  const articleUrl = 'https://medium.com/@chirag4798/who-am-i-3fffea3ab951';
+
+  assert.match(overview, /## Bonus: Philosophy/);
+  assert.match(overview, /my attempt at philosophy/i);
+  assert.ok(overview.includes(`[Who am I?](${articleUrl})`));
+  assert.ok(articles.includes(`[Who am I?](${articleUrl})`));
+});
+
 test('sidebar pages and static chat answers use the typewriter without a blue textarea outline', () => {
   assert.match(portfolioClientSource, /async function typeRichContent\(/);
   assert.match(portfolioClientSource, /void typeRichContent\(response\.querySelector\('\.assistant-content'\),generation\)/);
