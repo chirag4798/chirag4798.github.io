@@ -65,6 +65,7 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
  function render(md){let raw=md.replace(/^### (.*)$/gm,'<h3>$1</h3>').replace(/^## (.*)$/gm,'<h2>$1</h2>').replace(/^# (.*)$/gm,'<h1>$1</h1>').replace(/^<div class="meta">(.*?)<\/div>$/gm,'<div class="meta">$1</div>').replace(/^> (.*)$/gm,'<blockquote>$1</blockquote>').replace(/^- (.*)$/gm,'<li>$1</li>');raw=raw.split(/\n\n+/).map(block=>{if(/^<(h[1-3]|div|blockquote|li|img)/.test(block))return block;if(block.startsWith('<li>'))return `<ul>${block}</ul>`;return `<p>${block}</p>`}).join('\n');return raw.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noreferrer">$1 ↗</a>')}
  const tree=[...document.querySelectorAll('.tree-file')],response=document.getElementById('response'),welcome=document.querySelector('.welcome');
  const resumePath='assets/files/Chirag_Shetty_Resume.pdf';
+ const approvedExternalLinks=[...new Set(Object.values(files).flatMap(content=>[...content.matchAll(/\]\((https:\/\/[^)\s]+)\)/g)].map(match=>match[1])))];
  const resumeCard=()=>`<a class="attachment-card" href="${resumePath}" download="Chirag_Shetty_Resume.pdf"><span class="pdf-badge">PDF</span><span class="attachment-name"><strong>Chirag_Shetty_Resume.pdf</strong><small>AI / ML Engineer · 2 pages</small></span><span class="download-icon" aria-hidden="true">↓</span></a>`;
  const sectionPrompts={'README.md':'Give me an overview','about.md':'Tell me about Chirag','jio-fynd.md':'Tell me about Chirag’s work at Jio Fynd','adagrad-ai.md':'Tell me about Chirag’s work at Adagrad AI','optisol.md':'Tell me about Chirag’s work at Optisol Business Solutions','projects.md':'Show me Chirag’s open-source work','articles.md':'Show me Chirag’s articles','experience.md':'Give me Chirag’s experience overview','toolkit.md':'What tools does Chirag work with?','resume.md':'Can you share Chirag’s resume?','contact.md':'How can I contact Chirag?'};
  function showFile(name){if(!files[name])return;tree.forEach(b=>b.classList.toggle('selected',b.dataset.file===name));welcome.hidden=true;response.hidden=false;const body=render(files[name])+(name==='resume.md'?resumeCard():'');response.innerHTML=`<div class="user-message">${sectionPrompts[name]||'Give me an overview'}</div><div class="assistant-message"><div class="assistant-avatar">✳</div><div class="assistant-content">${body}</div></div>`;if(innerWidth<=720)document.getElementById('explorer').classList.add('closed');document.querySelector('.chat-scroll').scrollTop=document.querySelector('.chat-scroll').scrollHeight}
@@ -101,20 +102,92 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
   const best=ranked[0];
   return best&&(best.score>=4&&(best.aliasHits.length||best.keywordHits.length||best.contentHits.length>=2))?[best]:[];
  }
- function send(){
-  const input=document.getElementById('chatInput'),question=input.value.trim();if(!question)return;
+ async function send(){
+  const input=document.getElementById('chatInput'),sendButton=document.getElementById('sendButton'),question=input.value.trim();if(!question||sendButton.disabled)return;
   welcome.hidden=true;response.hidden=false;
   const safeQuestion=question.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const resumeRequest=/\b(resume|cv|curriculum vitae)\b/i.test(question);
-  let answer;
-  if(resumeRequest)answer=`<p>Here’s my current resume. You can download the PDF here:</p>${resumeCard()}`;
-  else {
-   const matches=matchTopics(question);
-   answer=matches.length?matches.map(topic=>render(files[topic.key])).join('<hr>'):`<p>I don’t have a reliable answer to that in the information on this site. I can help with Chirag’s organizations and experience, projects and open-source work, articles, skills, contact details, or resume.</p>`;
+  response.insertAdjacentHTML('beforeend',`<div class="user-message">${safeQuestion}</div>`);
+  const pending=document.createElement('div');pending.className='assistant-message';pending.innerHTML='<div class="assistant-avatar">✳</div><div class="assistant-content ai-thinking">Thinking…</div>';response.append(pending);
+  input.value='';input.disabled=true;sendButton.disabled=true;
+  try{
+   let answer;
+   if(resumeRequest)answer=`<p>Here’s my current resume. You can download the PDF here:</p>${resumeCard()}`;
+   else {
+    let matches=matchTopics(question);
+    const asksAboutChirag=/\b(chirag|you|your|yourself|he|his|him|i|me|my|mine)\b/i.test(question);
+    if(!matches.length&&asksAboutChirag)matches=['about.md','experience.md','toolkit.md'].map(key=>({key}));
+    if(!matches.length){
+     answer='<p>I’m Chirag’s portfolio assistant. I can help with his experience, projects, open-source work, articles, skills, contact details, or resume.</p>';
+    }else{
+     const relevantFiles=matches.map(topic=>topic.key);
+     const cloudAnswer=await answerWithCloud(question,relevantFiles);
+     const nanoAnswer=cloudAnswer||await answerWithNano(question);
+     if(nanoAnswer)answer=window.PortfolioAI.renderAnswer(nanoAnswer,Object.keys(files),approvedExternalLinks);
+     else answer=matches.map(topic=>render(files[topic.key])).join('<hr>');
+    }
+   }
+   pending.remove();response.insertAdjacentHTML('beforeend',`<div class="assistant-message"><div class="assistant-avatar">✳</div><div class="assistant-content">${answer}</div></div>`);
+  }finally{
+   pending.remove();input.disabled=false;sendButton.disabled=false;
+   document.querySelector('.chat-scroll').scrollTop=document.querySelector('.chat-scroll').scrollHeight;
   }
-  response.insertAdjacentHTML('beforeend',`<div class="user-message">${safeQuestion}</div><div class="assistant-message"><div class="assistant-avatar">✳</div><div class="assistant-content">${answer}</div></div>`);
-  input.value='';document.querySelector('.chat-scroll').scrollTop=document.querySelector('.chat-scroll').scrollHeight;
  }
+
+ const aiStatus=document.getElementById('aiStatus');
+ const chatEndpoint=document.querySelector('meta[name="portfolio-chat-endpoint"]')?.content.trim()||'';
+ let aiAvailability='checking',nanoSession=null,sessionPromise=null;
+ function setAiStatus(message){if(aiStatus)aiStatus.textContent=message}
+ function setModelStatus(status){
+  aiAvailability=status;
+  if(status==='available')setAiStatus('Gemini Nano · on-device AI ready');
+  else if(status==='downloadable')setAiStatus('Gemini Nano · downloads on first question');
+  else if(status==='downloading')setAiStatus('Gemini Nano · preparing on-device AI');
+  else setAiStatus('On-device AI unavailable · local guide active');
+ }
+ async function checkNanoAvailability(){
+  const status=await window.PortfolioAI.getAvailability(window.LanguageModel);
+  setModelStatus(status);
+ }
+ async function answerWithCloud(question,relevantFiles){
+  if(!chatEndpoint)return null;
+  try{
+   setAiStatus('Asking the portfolio assistant…');
+   const answer=await window.PortfolioAI.requestCloudAnswer(chatEndpoint,question,window.PortfolioAI.buildPortfolioContext(files,relevantFiles));
+   if(answer)setAiStatus('Portfolio AI · OpenRouter free models');
+   return answer;
+  }catch(_error){
+   setAiStatus('Cloud AI unavailable · trying local options…');
+   return null;
+  }
+ }
+ async function answerWithNano(question){
+  if(!window.LanguageModel||aiAvailability==='unsupported'||aiAvailability==='unavailable')return null;
+  try{
+   if(!nanoSession){
+    if(!sessionPromise){
+     setAiStatus('Preparing Gemini Nano…');
+     sessionPromise=window.PortfolioAI.createSession(window.LanguageModel,files,loaded=>setAiStatus(`Downloading Gemini Nano · ${Math.round(loaded*100)}%`));
+    }
+    nanoSession=await sessionPromise;sessionPromise=null;
+   }
+   if(!nanoSession){setModelStatus('unsupported');return null}
+   setAiStatus('Answering on this device…');
+   const answer=await nanoSession.prompt(question);
+   setModelStatus('available');
+   return typeof answer==='string'&&answer.trim()?answer.trim():null;
+  }catch(_error){
+   if(nanoSession&&typeof nanoSession.destroy==='function')nanoSession.destroy();
+   nanoSession=null;sessionPromise=null;setModelStatus('unsupported');
+   return null;
+  }
+ }
+ if(chatEndpoint)setAiStatus('Portfolio AI · OpenRouter free models');
+ else checkNanoAvailability();
+ response.addEventListener('click',event=>{
+  const link=event.target.closest('a[data-file]');
+  if(link&&files[link.dataset.file]){event.preventDefault();showFile(link.dataset.file)}
+ });
  document.getElementById('sendButton').addEventListener('click',send);document.getElementById('chatInput').addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}});
  if(innerWidth<=720)document.getElementById('explorer').classList.add('closed');window.addEventListener('resize',()=>{if(innerWidth>720)document.getElementById('explorer').classList.remove('closed')});
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;setTimeout(()=>{document.body.classList.add('ready');document.body.classList.remove('booting')},reduced?80:950);
