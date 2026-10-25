@@ -116,6 +116,10 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
  function render(md){let raw=md.replace(/^### (.*)$/gm,'<h3>$1</h3>').replace(/^## (.*)$/gm,'<h2>$1</h2>').replace(/^# (.*)$/gm,'<h1>$1</h1>').replace(/^<div class="meta">(.*?)<\/div>$/gm,'<div class="meta">$1</div>').replace(/^> (.*)$/gm,'<blockquote>$1</blockquote>').replace(/^- (.*)$/gm,'<li>$1</li>');raw=raw.split(/\n\n+/).map(block=>{if(/^<(h[1-3]|div|blockquote|li|img)/.test(block))return block;if(block.startsWith('<li>'))return `<ul>${block}</ul>`;return `<p>${block}</p>`}).join('\n');return raw.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noreferrer">$1 ↗</a>')}
  const tree=[...document.querySelectorAll('.tree-file')],response=document.getElementById('response'),welcome=document.querySelector('.welcome');
  let chatGeneration=0,lastCloudFailure=null;
+ const dailyQuotaStorageKey=`portfolio-llm-quota-${new Date().toISOString().slice(0,10)}`;
+ function readDailyQuotaState(){try{return localStorage.getItem(dailyQuotaStorageKey)==='exhausted'}catch(_error){return false}}
+ function rememberDailyQuotaState(){try{localStorage.setItem(dailyQuotaStorageKey,'exhausted')}catch(_error){}}
+ let dailyLlmQuotaExhausted=readDailyQuotaState();
  const resumePath='assets/files/Chirag_Shetty_Resume.pdf';
  const approvedExternalLinks=[...new Set(Object.values(files).flatMap(content=>[...content.matchAll(/\]\((https:\/\/[^)\s]+)\)/g)].map(match=>match[1])))];
  function renderResourceLinks(sectionNames,excludedUrls=[]){
@@ -124,6 +128,11 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
   const excluded=new Set(excludedUrls);
   const links=relevant.flatMap(name=>[...files[name].matchAll(/^- \[([^\]]+)\]\((https:\/\/[^)\s]+)\)/gm)].filter(([, ,url])=>!excluded.has(url)).map(([,label,url])=>`- [${label}](${url})`));
   return links.length?`<div class="portfolio-resource-links"><p><strong>Explore the links</strong></p>${window.PortfolioAI.renderAnswer(links.join('\n'),Object.keys(files),approvedExternalLinks)}</div>`:'';
+ }
+ function buildStaticTopicAnswer(topics){
+  const html=topics.map(topic=>render(files[topic.key])).join('<hr>');
+  const text=topics.map(topic=>{const section=document.createElement('div');section.innerHTML=render(files[topic.key]);return (section.innerText||section.textContent||'').trim()}).filter(Boolean).join('\n\n');
+  return {html,text};
  }
  const resumeCard=()=>`<a class="attachment-card" href="${resumePath}" download="Chirag_Shetty_Resume.pdf"><span class="pdf-badge">PDF</span><span class="attachment-name"><strong>Chirag_Shetty_Resume.pdf</strong><small>AI / ML Engineer · 2 pages</small></span><span class="download-icon" aria-hidden="true">↓</span></a>`;
  const sectionPrompts={'README.md':'Give me an overview','about.md':'Tell me about Chirag','jio-fynd.md':'Tell me about Chirag’s work at Jio Fynd','adagrad-ai.md':'Tell me about Chirag’s work at Adagrad AI','optisol.md':'Tell me about Chirag’s work at Optisol Business Solutions','projects.md':'Show me Chirag’s open-source work','articles.md':'Show me Chirag’s articles','experience.md':'Give me Chirag’s experience overview','toolkit.md':'What tools does Chirag work with?','resume.md':'Can you share Chirag’s resume?','contact.md':'How can I contact Chirag?'};
@@ -236,16 +245,33 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
     }else{
      const relevantFiles=matches.map(topic=>topic.key);
      resourceFiles=relevantFiles;
-     const cloudAnswer=await answerWithCloud(question,relevantFiles,chunk=>streamer.push(chunk));
-     if(!cloudAnswer){streamer.reset();answerLine.textContent=''}
-     const nanoAnswer=cloudAnswer||await answerWithNano(question,chunk=>streamer.push(chunk));
-     if(nanoAnswer)await streamer.finish();
-     else {streamer.reset();answerLine.textContent=''}
-     if(nanoAnswer){const renderedAnswer=window.PortfolioAI.renderAnswer(nanoAnswer,Object.keys(files),approvedExternalLinks);const linkedUrls=[...renderedAnswer.matchAll(/href="([^"]+)"/g)].map(([,url])=>url);answer=renderedAnswer+renderResourceLinks(resourceFiles,linkedUrls)}
-     else{
-      const rateLimited=lastCloudFailure?.status===429||['RATE_LIMITED','UPSTREAM_RATE_LIMITED'].includes(lastCloudFailure?.code);
-      setAiStatus(rateLimited?'AI request limit reached · try again later':lastCloudFailure?'AI temporarily unavailable · try again':'On-device AI unavailable · browse sections');
-      answer=window.PortfolioAI.renderAnswer(window.PortfolioAI.buildFallbackAnswer(relevantFiles,rateLimited?'rate-limited':'unavailable'),Object.keys(files),approvedExternalLinks)+renderResourceLinks(resourceFiles);
+     const cloudAnswer=dailyLlmQuotaExhausted?null:await answerWithCloud(question,relevantFiles,chunk=>streamer.push(chunk));
+     if(window.PortfolioAI.isDailyQuotaError(lastCloudFailure)){
+      dailyLlmQuotaExhausted=true;
+      rememberDailyQuotaState();
+     }
+     const upstreamRateLimited=dailyLlmQuotaExhausted||window.PortfolioAI.isUpstreamRateLimitError(lastCloudFailure);
+     if(upstreamRateLimited){
+      const dailyQuota= dailyLlmQuotaExhausted;
+      const notice=dailyQuota?'The LLM quota for today is finished. You’re viewing the static answers.':'The LLM is rate-limited right now. You’re viewing the static answers.';
+      setAiStatus(dailyQuota?'LLM daily quota finished · static answers':'LLM temporarily rate-limited · static answers');
+      const noticeNode=document.createElement('p');noticeNode.className='llm-quota-notice';noticeNode.setAttribute('role','note');noticeNode.textContent=notice;
+      pendingContent.insertBefore(noticeNode,thinking);
+      streamer.reset();answerLine.textContent='';answerStarted=false;thinking.hidden=false;
+      const staticAnswer=buildStaticTopicAnswer(matches);
+      await window.PortfolioAI.streamStaticText(staticAnswer.text,chunk=>{if(generation!==chatGeneration)return false;streamer.push(chunk);return true});
+      answer=`<p class="llm-quota-notice" role="note">${notice}</p>${staticAnswer.html}`;
+     }else{
+      if(!cloudAnswer){streamer.reset();answerLine.textContent=''}
+      const nanoAnswer=cloudAnswer||await answerWithNano(question,chunk=>streamer.push(chunk));
+      if(nanoAnswer)await streamer.finish();
+      else {streamer.reset();answerLine.textContent=''}
+      if(nanoAnswer){const renderedAnswer=window.PortfolioAI.renderAnswer(nanoAnswer,Object.keys(files),approvedExternalLinks);const linkedUrls=[...renderedAnswer.matchAll(/href="([^"]+)"/g)].map(([,url])=>url);answer=renderedAnswer+renderResourceLinks(resourceFiles,linkedUrls)}
+      else{
+       const rateLimited=lastCloudFailure?.status===429||lastCloudFailure?.code==='RATE_LIMITED';
+       setAiStatus(rateLimited?'AI request limit reached · try again later':lastCloudFailure?'AI temporarily unavailable · try again':'On-device AI unavailable · browse sections');
+       answer=window.PortfolioAI.renderAnswer(window.PortfolioAI.buildFallbackAnswer(relevantFiles,rateLimited?'rate-limited':'unavailable'),Object.keys(files),approvedExternalLinks)+renderResourceLinks(resourceFiles);
+      }
      }
     }
    }
@@ -269,7 +295,7 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
   else if(status==='downloading')setAiStatus('Gemini Nano · preparing on-device AI');
   else setAiStatus('On-device AI unavailable · local guide active');
  }
- function resetAiStatus(){if(chatEndpoint)setAiStatus('AI assistant ready');else setModelStatus(aiAvailability)}
+ function resetAiStatus(){if(chatEndpoint)setAiStatus(dailyLlmQuotaExhausted?'LLM daily quota finished · static answers':'AI assistant ready');else setModelStatus(aiAvailability)}
  async function checkNanoAvailability(){
   const status=await window.PortfolioAI.getAvailability(window.LanguageModel);
   setModelStatus(status);
@@ -315,7 +341,7 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
    return null;
   }
  }
- if(chatEndpoint)setAiStatus('AI assistant ready');
+ if(chatEndpoint)setAiStatus(dailyLlmQuotaExhausted?'LLM daily quota finished · static answers':'AI assistant ready');
  else checkNanoAvailability();
  response.addEventListener('click',event=>{
   const link=event.target.closest('a[data-file]');

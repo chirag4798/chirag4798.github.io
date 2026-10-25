@@ -213,17 +213,18 @@ function eventStreamResponse(body: ReadableStream<Uint8Array>, origin: string): 
   });
 }
 
-function describeUpstreamError(body: unknown): { providerErrorCode?: string | number; providerErrorType?: string; providerMessage: string } {
-  if (!body || typeof body !== 'object') return { providerMessage: 'Provider returned a non-JSON error response.' };
+function describeUpstreamError(body: unknown): { providerErrorCode?: string | number; providerErrorType?: string; providerMessage: string; dailyQuotaExhausted: boolean } {
+  if (!body || typeof body !== 'object') return { providerMessage: 'Provider returned a non-JSON error response.', dailyQuotaExhausted: false };
   const error = (body as { error?: unknown }).error;
-  if (!error || typeof error !== 'object') return { providerMessage: 'Provider returned an error without structured details.' };
+  if (!error || typeof error !== 'object') return { providerMessage: 'Provider returned an error without structured details.', dailyQuotaExhausted: false };
   const details = error as { code?: unknown; type?: unknown; message?: unknown };
   const message = typeof details.message === 'string' ? details.message : '';
+  const dailyQuotaExhausted = /free-models-per-day/i.test(message);
   let providerMessage = 'Provider error message omitted (unclassified).';
   if (/reasoning is mandatory for this endpoint and cannot be disabled/i.test(message)) {
     providerMessage = 'Reasoning is mandatory for this endpoint and cannot be disabled.';
-  } else if (/free-models-per-day/i.test(message)) {
-    providerMessage = 'Rate limit exceeded: free-models-per-day.';
+  } else if (dailyQuotaExhausted) {
+    providerMessage = 'OpenRouter free-model daily quota exhausted.';
   } else if (/rate limit/i.test(message)) {
     providerMessage = 'Provider rate limit exceeded.';
   } else if (/provider returned error/i.test(message)) {
@@ -235,13 +236,14 @@ function describeUpstreamError(body: unknown): { providerErrorCode?: string | nu
     ...(typeof details.code === 'string' || typeof details.code === 'number' ? { providerErrorCode: details.code } : {}),
     ...(typeof details.type === 'string' ? { providerErrorType: details.type.slice(0, 80) } : {}),
     providerMessage,
+    dailyQuotaExhausted,
   };
 }
 
-async function readUpstreamError(response: Response): Promise<{ providerErrorCode?: string | number; providerErrorType?: string; providerMessage: string }> {
+async function readUpstreamError(response: Response): Promise<{ providerErrorCode?: string | number; providerErrorType?: string; providerMessage: string; dailyQuotaExhausted: boolean }> {
   try {
     const reader = response.body?.getReader();
-    if (!reader) return { providerMessage: 'Provider returned an empty error response.' };
+    if (!reader) return { providerMessage: 'Provider returned an empty error response.', dailyQuotaExhausted: false };
     const chunks: Uint8Array[] = [];
     let byteLength = 0;
     while (byteLength <= 4096) {
@@ -252,7 +254,7 @@ async function readUpstreamError(response: Response): Promise<{ providerErrorCod
     }
     if (byteLength > 4096) {
       await reader.cancel().catch(() => {});
-      return { providerMessage: 'Provider error response exceeded the diagnostic size limit.' };
+      return { providerMessage: 'Provider error response exceeded the diagnostic size limit.', dailyQuotaExhausted: false };
     }
     const bytes = new Uint8Array(byteLength);
     let offset = 0;
@@ -262,7 +264,7 @@ async function readUpstreamError(response: Response): Promise<{ providerErrorCod
     }
     return describeUpstreamError(JSON.parse(new TextDecoder().decode(bytes)));
   } catch {
-    return { providerMessage: 'Provider returned an unreadable error response.' };
+    return { providerMessage: 'Provider returned an unreadable error response.', dailyQuotaExhausted: false };
   }
 }
 
@@ -369,7 +371,13 @@ Deno.serve(async (request) => {
         ...providerError,
       });
       const isRequestRejected = upstream.status >= 400 && upstream.status < 500 && upstream.status !== 429;
-      const code = upstream.status === 429 ? 'UPSTREAM_RATE_LIMITED' : isRequestRejected ? 'UPSTREAM_REQUEST_REJECTED' : 'UPSTREAM_UNAVAILABLE';
+      const code = providerError.dailyQuotaExhausted
+        ? 'UPSTREAM_DAILY_QUOTA_EXHAUSTED'
+        : upstream.status === 429
+          ? 'UPSTREAM_RATE_LIMITED'
+          : isRequestRejected
+            ? 'UPSTREAM_REQUEST_REJECTED'
+            : 'UPSTREAM_UNAVAILABLE';
       return jsonResponse({ error: 'Portfolio AI is temporarily unavailable', code }, isRequestRejected ? 502 : 503, origin);
     }
     if (!upstream.body) {

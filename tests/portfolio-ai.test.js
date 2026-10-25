@@ -76,6 +76,26 @@ test('text streamer forwards provider chunks immediately without extra pacing', 
   assert.deepEqual(output, ['hello ', 'world', 'next']);
 });
 
+test('daily LLM quota exhaustion is distinguished from other rate limits', () => {
+  assert.equal(PortfolioAI.isDailyQuotaError({ code: 'UPSTREAM_DAILY_QUOTA_EXHAUSTED' }), true);
+  assert.equal(PortfolioAI.isDailyQuotaError({ code: 'UPSTREAM_RATE_LIMITED' }), false);
+  assert.equal(PortfolioAI.isDailyQuotaError({ code: 'RATE_LIMITED' }), false);
+  assert.equal(PortfolioAI.isUpstreamRateLimitError({ code: 'UPSTREAM_DAILY_QUOTA_EXHAUSTED' }), true);
+  assert.equal(PortfolioAI.isUpstreamRateLimitError({ code: 'UPSTREAM_RATE_LIMITED' }), true);
+  assert.equal(PortfolioAI.isUpstreamRateLimitError({ code: 'RATE_LIMITED' }), false);
+});
+
+test('static fallback text streams in readable chunks without changing its content', async () => {
+  const chunks = [];
+  const waits = [];
+  const source = 'Static portfolio answers remain available when the model quota ends.';
+  await PortfolioAI.streamStaticText(source, chunk => chunks.push(chunk), async () => waits.push(true));
+
+  assert.ok(chunks.length > 1);
+  assert.equal(chunks.join(''), source);
+  assert.ok(waits.length > 0);
+});
+
 test('cloud chat sends the user question and context, then streams answer chunks', async () => {
   let request;
   let observedBeforeStreamCompleted = false;
