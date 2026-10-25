@@ -210,13 +210,18 @@ test('unavailable cloud chat fallback only links relevant sections and does not 
 test('overview does not show non-clickable virtual file paths', () => {
   assert.doesNotMatch(portfolioClientSource, /work\/impetus-design\.md/);
   assert.doesNotMatch(portfolioClientSource, /open-source\/projects\.md/);
-  assert.match(portfolioClientSource, /Fashion Design Platform or Open-source projects from the Explorer/);
+  assert.match(portfolioClientSource, /\[Fashion design platform\]\(impetus-design\.md\)/);
+  assert.match(portfolioClientSource, /\[open-source projects\]\(projects\.md\)/);
+  assert.match(portfolioClientSource, /files\[target\]\?`<a href="#\$\{target\}" data-file="\$\{target\}">\$\{label\}<\/a>`/);
+  assert.doesNotMatch(portfolioClientSource, /Choose a file in the Explorer|from the Explorer to explore those areas/);
 });
 
 test('sidebar pages and static chat answers use the typewriter without a blue textarea outline', () => {
   assert.match(portfolioClientSource, /async function typeRichContent\(/);
   assert.match(portfolioClientSource, /void typeRichContent\(response\.querySelector\('\.assistant-content'\),generation\)/);
   assert.match(portfolioClientSource, /if\(typeAnswer\)await typeRichContent\(/);
+  assert.match(portfolioStylesSource, /\.assistant-content li\.typewriter-pending\{display:none\}/);
+  assert.match(portfolioClientSource, /if\(\/\\S\/\.test\(character\)\)item\.node\.parentElement\?\.closest\('li'\)\?\.classList\.remove\('typewriter-pending'\)/);
   assert.doesNotMatch(portfolioStylesSource, /textarea:focus-visible/);
 });
 

@@ -15,3 +15,4 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #a9c7
 @media(max-width:480px){.utility-dialog{padding:17px}.share-link-row{flex-direction:column}.share-link-row button{height:38px}.toast{bottom:34px}}
 @media(prefers-reduced-motion:reduce){.thinking-label{animation:none;background:none;color:#aaa}.utility-dialog[open]{animation:none}}
 .llm-quota-notice{margin:0 0 11px!important;padding-left:10px;border-left:2px solid #4a4a4a;color:#888;font-size:11px;line-height:1.55}
+.assistant-content li.typewriter-pending{display:none}
