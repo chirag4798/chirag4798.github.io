@@ -21,7 +21,7 @@ The resume is available at `assets/files/Chirag_Shetty_Resume.pdf`. The chat pro
 
 ## Chat AI setup
 
-Chat answers use a Supabase Edge Function that calls OpenRouter's `openrouter/free` model router. The OpenRouter key stays in Supabase secrets and is never sent to the browser. The function only requests the free-model router and does not accept model or provider choices from visitors. Its database-backed limiter allows at most 45 LLM requests per UTC day globally and 12 per IP per UTC day. Supabase Free includes 500,000 Edge Function invocations per month, and inactive free projects may be paused.
+Chat answers use a Supabase Edge Function that calls OpenRouter's `openrouter/free` model router. The OpenRouter key stays in Supabase secrets and is never sent to the browser. The function only requests the free-model router and does not accept model or provider choices from visitors. Its database-backed limiter allows at most 500 LLM requests per UTC day globally and 100 per IP per UTC day. Supabase Free includes 500,000 Edge Function invocations per month, and inactive free projects may be paused.
 
 To connect accounts:
 
