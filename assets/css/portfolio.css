@@ -5,7 +5,7 @@
 
 .typing-cursor{display:none}.typing-cursor.is-active{display:inline-block;width:2px;height:1em;margin-left:3px;vertical-align:-.12em;background:currentColor;animation:typing-caret .8s steps(2,start) infinite}@keyframes typing-caret{to{visibility:hidden}}
 
-button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #a9c7ff;outline-offset:2px}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #a9c7ff;outline-offset:2px}
 .codex-brand{border-radius:6px;padding:3px 5px;margin-left:-5px}.codex-brand:hover{background:#292929;color:#fff}
 .header-actions>button,.more-wrap>button{height:32px;min-width:32px;border:0;border-radius:6px;background:transparent;color:#aaa;font-size:17px}.header-actions>button:hover,.more-wrap>button:hover,.more-wrap>button[aria-expanded=true]{background:#303030;color:#f4f4f4}
 .more-wrap{position:relative;display:flex;align-items:center}.header-menu{position:absolute;z-index:5;right:0;top:calc(100% + 6px);width:190px;padding:5px;background:#292929;border:1px solid #414141;border-radius:9px;box-shadow:0 12px 30px #0008}.header-menu[hidden]{display:none}.header-menu [role=menuitem]{display:block;width:100%;padding:9px 10px;border:0;border-radius:6px;background:none;color:#ddd;text-align:left;text-decoration:none;font:inherit;font-size:12px}.header-menu [role=menuitem]:hover,.header-menu [role=menuitem]:focus-visible{background:#393939;color:#fff}

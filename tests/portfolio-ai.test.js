@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const PortfolioAI = require('../assets/js/portfolio-ai.js');
 const portfolioClientSource = fs.readFileSync(require.resolve('../assets/js/portfolio.js'), 'utf8');
+const portfolioStylesSource = fs.readFileSync(require.resolve('../assets/css/portfolio.css'), 'utf8');
 const edgeFunctionSource = fs.readFileSync(require.resolve('../supabase/functions/portfolio-chat/index.ts'), 'utf8');
 
 const files = {
@@ -210,6 +211,13 @@ test('overview does not show non-clickable virtual file paths', () => {
   assert.doesNotMatch(portfolioClientSource, /work\/impetus-design\.md/);
   assert.doesNotMatch(portfolioClientSource, /open-source\/projects\.md/);
   assert.match(portfolioClientSource, /Fashion Design Platform or Open-source projects from the Explorer/);
+});
+
+test('sidebar pages and static chat answers use the typewriter without a blue textarea outline', () => {
+  assert.match(portfolioClientSource, /async function typeRichContent\(/);
+  assert.match(portfolioClientSource, /void typeRichContent\(response\.querySelector\('\.assistant-content'\),generation\)/);
+  assert.match(portfolioClientSource, /if\(typeAnswer\)await typeRichContent\(/);
+  assert.doesNotMatch(portfolioStylesSource, /textarea:focus-visible/);
 });
 
 test('availability checks request English text input and output', async () => {

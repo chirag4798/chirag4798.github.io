@@ -126,13 +126,34 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
   return links.length?`<div class="portfolio-resource-links"><p><strong>Explore the links</strong></p>${window.PortfolioAI.renderAnswer(links.join('\n'),Object.keys(files),approvedExternalLinks)}</div>`:'';
  }
  function buildStaticTopicAnswer(topics){
-  const html=topics.map(topic=>render(files[topic.key])).join('<hr>');
-  const text=topics.map(topic=>{const section=document.createElement('div');section.innerHTML=render(files[topic.key]);return (section.innerText||section.textContent||'').trim()}).filter(Boolean).join('\n\n');
-  return {html,text};
+  return topics.map(topic=>render(files[topic.key])).join('<hr>');
  }
  const resumeCard=()=>`<a class="attachment-card" href="${resumePath}" download="Chirag_Shetty_Resume.pdf"><span class="pdf-badge">PDF</span><span class="attachment-name"><strong>Chirag_Shetty_Resume.pdf</strong><small>AI / ML Engineer · 2 pages</small></span><span class="download-icon" aria-hidden="true">↓</span></a>`;
  const sectionPrompts={'README.md':'Give me an overview','about.md':'Tell me about Chirag','jio-fynd.md':'Tell me about Chirag’s work at Jio Fynd','adagrad-ai.md':'Tell me about Chirag’s work at Adagrad AI','optisol.md':'Tell me about Chirag’s work at Optisol Business Solutions','projects.md':'Show me Chirag’s open-source work','articles.md':'Show me Chirag’s articles','experience.md':'Give me Chirag’s experience overview','toolkit.md':'What tools does Chirag work with?','resume.md':'Can you share Chirag’s resume?','contact.md':'How can I contact Chirag?'};
- function showFile(name){if(!files[name])return;tree.forEach(b=>b.classList.toggle('selected',b.dataset.file===name));welcome.hidden=true;response.hidden=false;const body=render(files[name])+(name==='resume.md'?resumeCard():'');response.innerHTML=`<div class="user-message">${sectionPrompts[name]||'Give me an overview'}</div><div class="assistant-message"><div class="assistant-avatar">✳</div><div class="assistant-content">${body}</div></div>`;if(innerWidth<=720)setSidebarOpen(false);document.querySelector('.chat-scroll').scrollTop=document.querySelector('.chat-scroll').scrollHeight}
+ async function typeRichContent(content,generation){
+  const deferredCards=[...content.querySelectorAll('.attachment-card')];
+  deferredCards.forEach(card=>card.remove());
+  const restoreCards=()=>deferredCards.forEach(card=>content.append(card));
+  const walker=document.createTreeWalker(content,NodeFilter.SHOW_TEXT),textNodes=[];
+  let node=walker.nextNode();
+  while(node){textNodes.push({node,characters:Array.from(node.nodeValue||'')});node=walker.nextNode()}
+  const totalCharacters=textNodes.reduce((total,item)=>total+item.characters.length,0);
+  if(!totalCharacters||window.matchMedia('(prefers-reduced-motion: reduce)').matches){restoreCards();return true}
+  const delay=Math.min(14,Math.max(1,2400/totalCharacters));
+  textNodes.forEach(item=>{item.node.nodeValue=''});
+  for(const item of textNodes){
+   for(const character of item.characters){
+    if(generation!==chatGeneration)return false;
+    item.node.appendData(character);
+    await new Promise(resolve=>setTimeout(resolve,delay));
+   }
+  }
+  if(generation!==chatGeneration)return false;
+  restoreCards();
+  for(const card of deferredCards)if(!await typeRichContent(card,generation))return false;
+  return generation===chatGeneration;
+ }
+ function showFile(name){if(!files[name])return;const generation=++chatGeneration;chatInput.disabled=false;updateSendButton();tree.forEach(b=>b.classList.toggle('selected',b.dataset.file===name));welcome.hidden=true;response.hidden=false;const body=render(files[name])+(name==='resume.md'?resumeCard():'');response.innerHTML=`<div class="user-message">${sectionPrompts[name]||'Give me an overview'}</div><div class="assistant-message"><div class="assistant-avatar">✳</div><div class="assistant-content">${body}</div></div>`;if(innerWidth<=720)setSidebarOpen(false);document.querySelector('.chat-scroll').scrollTop=document.querySelector('.chat-scroll').scrollHeight;void typeRichContent(response.querySelector('.assistant-content'),generation)}
  tree.forEach(button=>button.addEventListener('click',()=>showFile(button.dataset.file)));
  const chatInput=document.getElementById('chatInput'),sendButton=document.getElementById('sendButton');
  function resizeComposer(){chatInput.style.height='auto';chatInput.style.height=`${Math.min(chatInput.scrollHeight,130)}px`;chatInput.style.overflowY=chatInput.scrollHeight>130?'auto':'hidden'}
@@ -225,19 +246,24 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
   const pendingContent=pending.querySelector('.assistant-content');
   const answerLine=pending.querySelector('.assistant-answer'),thinking=pending.querySelector('.thinking-indicator');let answerStarted=false;
   const streamer=window.PortfolioAI.createTextStreamer(chunk=>{if(generation!==chatGeneration)return;if(!answerStarted){answerStarted=true;thinking.hidden=true}answerLine.textContent+=chunk});
-  let resourceFiles=[];
+  let resourceFiles=[],answer='',typeAnswer=false;
   try{
-   let answer;
-   if(resumeRequest)answer=`<p>Here’s my current resume. You can download the PDF here:</p>${resumeCard()}`;
+   if(resumeRequest){
+    const resumeIntro='Here’s my current resume. You can download the PDF here:';
+    answer=`<p>${resumeIntro}</p>${resumeCard()}`;
+    typeAnswer=true;
+   }
    else {
     let matches=matchTopics(question);
     const asksAboutChirag=/\b(chirag|you|your|yourself|he|his|him|i|me|my|mine)\b/i.test(question);
     if(!matches.length&&asksAboutChirag)matches=['about.md','experience.md','toolkit.md'].map(key=>({key}));
     if(!matches.length){
      answer='<p>I’m Chirag’s portfolio assistant. I can help with his experience, projects, open-source work, articles, skills, contact details, or resume.</p>';
+     typeAnswer=true;
     }else if(matches.length===1&&matches[0].key==='contact.md'){
      setAiStatus('Portfolio · direct answer');
      answer=`<p>Here are Chirag’s contact details:</p>${render(files['contact.md'])}`;
+     typeAnswer=true;
     }else{
      const relevantFiles=matches.map(topic=>topic.key);
      resourceFiles=relevantFiles;
@@ -252,8 +278,8 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
       pendingContent.insertBefore(noticeNode,thinking);
       streamer.reset();answerLine.textContent='';answerStarted=false;thinking.hidden=false;
       const staticAnswer=buildStaticTopicAnswer(matches);
-      await window.PortfolioAI.streamStaticText(staticAnswer.text,chunk=>{if(generation!==chatGeneration)return false;streamer.push(chunk);return true});
-      answer=`<p class="llm-quota-notice" role="note">${notice}</p>${staticAnswer.html}`;
+      answer=`<p class="llm-quota-notice" role="note">${notice}</p>${staticAnswer}`;
+      typeAnswer=true;
      }else{
       if(!cloudAnswer){streamer.reset();answerLine.textContent=''}
       const nanoAnswer=cloudAnswer||await answerWithNano(question,chunk=>streamer.push(chunk));
@@ -264,12 +290,14 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
        const rateLimited=lastCloudFailure?.status===429||lastCloudFailure?.code==='RATE_LIMITED';
        setAiStatus(rateLimited?'AI request limit reached · try again later':lastCloudFailure?'AI temporarily unavailable · try again':'On-device AI unavailable · browse sections');
        answer=window.PortfolioAI.renderAnswer(window.PortfolioAI.buildFallbackAnswer(relevantFiles,rateLimited?'rate-limited':'unavailable'),Object.keys(files),approvedExternalLinks)+renderResourceLinks(resourceFiles);
+       typeAnswer=true;
       }
      }
     }
    }
    if(generation!==chatGeneration)return;
    pending.remove();response.insertAdjacentHTML('beforeend',`<div class="assistant-message"><div class="assistant-avatar">✳</div><div class="assistant-content">${answer}</div></div>`);
+   if(typeAnswer)await typeRichContent(response.lastElementChild.querySelector('.assistant-content'),generation);
   }catch(_error){
    if(generation===chatGeneration){pendingContent.classList.remove('ai-thinking');pendingContent.textContent='I couldn’t finish that response. Please try again.'}
   }finally{
