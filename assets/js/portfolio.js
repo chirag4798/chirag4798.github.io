@@ -251,10 +251,11 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
       rememberDailyQuotaState();
      }
      const upstreamRateLimited=dailyLlmQuotaExhausted||window.PortfolioAI.isUpstreamRateLimitError(lastCloudFailure);
-     if(upstreamRateLimited){
+     const incompleteModelOutput=window.PortfolioAI.isIncompleteModelOutputError(lastCloudFailure);
+     if(upstreamRateLimited||incompleteModelOutput){
       const dailyQuota= dailyLlmQuotaExhausted;
-      const notice=dailyQuota?'The LLM quota for today is finished. You’re viewing the static answers.':'The LLM is rate-limited right now. You’re viewing the static answers.';
-      setAiStatus(dailyQuota?'LLM daily quota finished · static answers':'LLM temporarily rate-limited · static answers');
+      const notice=dailyQuota?'The LLM quota for today is finished. You’re viewing the static answers.':upstreamRateLimited?'The LLM is rate-limited right now. You’re viewing the static answers.':'The AI response couldn’t be completed. You’re viewing the static answers.';
+      setAiStatus(dailyQuota?'LLM daily quota finished · static answers':upstreamRateLimited?'LLM temporarily rate-limited · static answers':'AI response incomplete · static answers');
       const noticeNode=document.createElement('p');noticeNode.className='llm-quota-notice';noticeNode.setAttribute('role','note');noticeNode.textContent=notice;
       pendingContent.insertBefore(noticeNode,thinking);
       streamer.reset();answerLine.textContent='';answerStarted=false;thinking.hidden=false;

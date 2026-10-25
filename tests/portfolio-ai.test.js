@@ -85,6 +85,13 @@ test('daily LLM quota exhaustion is distinguished from other rate limits', () =>
   assert.equal(PortfolioAI.isUpstreamRateLimitError({ code: 'RATE_LIMITED' }), false);
 });
 
+test('incomplete model output is routed to static fallback without marking quota exhaustion', () => {
+  assert.equal(PortfolioAI.isIncompleteModelOutputError({ code: 'MODEL_OUTPUT_TRUNCATED' }), true);
+  assert.equal(PortfolioAI.isIncompleteModelOutputError({ code: 'EMPTY_MODEL_RESPONSE' }), true);
+  assert.equal(PortfolioAI.isIncompleteModelOutputError({ code: 'UPSTREAM_UNAVAILABLE' }), false);
+  assert.equal(PortfolioAI.isDailyQuotaError({ code: 'MODEL_OUTPUT_TRUNCATED' }), false);
+});
+
 test('static fallback text streams in readable chunks without changing its content', async () => {
   const chunks = [];
   const waits = [];

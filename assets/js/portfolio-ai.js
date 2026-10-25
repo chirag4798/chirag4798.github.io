@@ -27,6 +27,10 @@
   return isDailyQuotaError(error)||error?.code==='UPSTREAM_RATE_LIMITED';
  }
 
+ function isIncompleteModelOutputError(error){
+  return ['MODEL_OUTPUT_TRUNCATED','MODEL_OUTPUT_TOO_LONG','EMPTY_MODEL_RESPONSE','MODEL_OUTPUT_REJECTED'].includes(error?.code);
+ }
+
  async function streamStaticText(text,onChunk,wait=()=>new Promise(resolve=>setTimeout(resolve,35))){
   const words=String(text||'').match(/\S+\s*/g)||[];
   for(let index=0;index<words.length;index+=8){
@@ -161,7 +165,7 @@
   return `${message} ${links?`You can still explore ${links}.`:'Please browse the portfolio sections.'}`;
  }
 
- const api={buildPortfolioContext,buildSystemPrompt,requestCloudAnswer,getAvailability,createSession,createTextStreamer,isDailyQuotaError,isUpstreamRateLimitError,streamStaticText,renderAnswer,buildFallbackAnswer};
+ const api={buildPortfolioContext,buildSystemPrompt,requestCloudAnswer,getAvailability,createSession,createTextStreamer,isDailyQuotaError,isUpstreamRateLimitError,isIncompleteModelOutputError,streamStaticText,renderAnswer,buildFallbackAnswer};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
  if(typeof globalThis!=='undefined')globalThis.PortfolioAI=api;
 })();
