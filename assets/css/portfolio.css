@@ -2,3 +2,5 @@
 .attachment-card{display:flex;align-items:center;gap:12px;max-width:440px;margin:14px 0;padding:12px 14px;border:1px solid #454545;background:#282828;border-radius:11px;color:#eee;text-decoration:none}.attachment-card:hover{background:#303030;border-color:#666}.pdf-badge{display:grid;place-items:center;width:38px;height:42px;border-radius:6px;background:#4b2525;color:#ffb4a8;font-size:10px;font-weight:700}.attachment-name{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}.attachment-name strong{font-size:12px;overflow-wrap:anywhere}.attachment-name small{font-size:10px;color:#999}.download-icon{font-size:19px;color:#ccc}.resume-suggestion{grid-column:1/-1}
 
 .startup-ai-note{max-width:330px;margin:8px auto 0!important;text-align:center;font-size:10px;line-height:1.45;color:#888}.ai-thinking{color:#999;font-size:12px}.send-button:disabled{opacity:.55;cursor:wait}
+
+.typing-cursor{display:none}.typing-cursor.is-active{display:inline-block;width:2px;height:1em;margin-left:3px;vertical-align:-.12em;background:currentColor;animation:typing-caret .8s steps(2,start) infinite}@keyframes typing-caret{to{visibility:hidden}}
