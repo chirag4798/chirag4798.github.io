@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const PortfolioAI = require('../assets/js/portfolio-ai.js');
 const portfolioClientSource = fs.readFileSync(require.resolve('../assets/js/portfolio.js'), 'utf8');
+const edgeFunctionSource = fs.readFileSync(require.resolve('../supabase/functions/portfolio-chat/index.ts'), 'utf8');
 
 const files = {
   'README.md': '# Overview\nProduction AI work. [Portfolio](https://chirag4798.github.io/)',
@@ -97,6 +98,11 @@ test('incomplete model output is routed to static fallback without marking quota
   assert.equal(PortfolioAI.isIncompleteModelOutputError({ code: 'EMPTY_MODEL_RESPONSE' }), true);
   assert.equal(PortfolioAI.isIncompleteModelOutputError({ code: 'UPSTREAM_UNAVAILABLE' }), false);
   assert.equal(PortfolioAI.isDailyQuotaError({ code: 'MODEL_OUTPUT_TRUNCATED' }), false);
+});
+
+test('edge response word limit accommodates concise recruiter answers with links', () => {
+  assert.match(edgeFunctionSource, /const maxAnswerWords = 140;/);
+  assert.match(edgeFunctionSource, /answer\.split\(\/\\s\+\/\)\.filter\(Boolean\)\.length > maxAnswerWords/);
 });
 
 test('static fallback text streams in readable chunks without changing its content', async () => {

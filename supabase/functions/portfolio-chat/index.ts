@@ -7,6 +7,7 @@ const allowedOrigins = new Set([
 const maxQuestionLength = 1200;
 const maxContextLength = 15000;
 const maxRequestBytes = 17000;
+const maxAnswerWords = 140;
 
 function jsonResponse(body: Record<string, unknown>, status: number, origin: string) {
   return new Response(JSON.stringify(body), {
@@ -173,7 +174,7 @@ function streamAnswer(upstreamBody: ReadableStream<Uint8Array>): ReadableStream<
         const text = choice?.delta?.content;
         if (typeof text !== 'string' || !text) return false;
         answer += text;
-        if (answer.split(/\s+/).filter(Boolean).length > 80) {
+        if (answer.split(/\s+/).filter(Boolean).length > maxAnswerWords) {
           fail('MODEL_OUTPUT_TOO_LONG');
           return true;
         }
