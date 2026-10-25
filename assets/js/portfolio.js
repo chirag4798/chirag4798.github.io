@@ -138,7 +138,7 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
   let node=walker.nextNode();
   while(node){textNodes.push({node,characters:Array.from(node.nodeValue||'')});node=walker.nextNode()}
   const totalCharacters=textNodes.reduce((total,item)=>total+item.characters.length,0);
-  if(!totalCharacters||window.matchMedia('(prefers-reduced-motion: reduce)').matches){restoreCards();return true}
+  if(!totalCharacters){restoreCards();return true}
   const delay=Math.min(14,Math.max(1,2400/totalCharacters));
   content.querySelectorAll('li').forEach(item=>item.classList.add('typewriter-pending'));
   textNodes.forEach(item=>{item.node.nodeValue=''});

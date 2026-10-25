@@ -232,6 +232,13 @@ test('sidebar pages and static chat answers use the typewriter without a blue te
   assert.doesNotMatch(portfolioStylesSource, /textarea:focus-visible/);
 });
 
+test('all assistant content keeps its typewriter in reduced-motion mode', () => {
+  const typewriter = portfolioClientSource.match(/async function typeRichContent\([\s\S]*?(?=\n function showFile\()/)?.[0] || '';
+  assert.ok(typewriter, 'rich-content typewriter is present');
+  assert.doesNotMatch(typewriter, /prefers-reduced-motion/);
+  assert.match(portfolioClientSource, /function typeWelcomeTitle\(\)[\s\S]*?setInterval\(/);
+});
+
 test('availability checks request English text input and output', async () => {
   let options;
   const model = {
