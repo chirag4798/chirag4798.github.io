@@ -11,23 +11,11 @@
   return Object.entries(files).filter(([name])=>!selected||name==='portfolio-profile.md'||selected.has(name)).map(([name,content])=>`### ${name}\n${plainText(content)}`).join('\n\n');
  }
 
- function createTextStreamer(onText,{chunkSize=6,intervalMs=40}={}){
-  let queue='',timer=null;
-  const waiters=[];
-  function stop(){if(timer!==null){clearInterval(timer);timer=null}}
-  function drain(){
-   const chars=Array.from(queue),chunk=chars.splice(0,chunkSize).join('');
-   queue=chars.join('');
-   if(chunk)onText(chunk);
-   if(!queue){
-    stop();
-    while(waiters.length)waiters.shift()();
-   }
-  }
+ function createTextStreamer(onText){
   return {
-   push(text){queue+=String(text);if(queue&&!timer)timer=setInterval(drain,intervalMs)},
-   finish(){return queue?new Promise(resolve=>waiters.push(resolve)):Promise.resolve()},
-   reset(){stop();queue='';while(waiters.length)waiters.shift()()}
+   push(text){if(text)onText(String(text))},
+   finish(){return Promise.resolve()},
+   reset(){}
   };
  }
 

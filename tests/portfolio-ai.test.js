@@ -59,26 +59,18 @@ test('portfolio context can be limited to only relevant sections', () => {
   assert.doesNotMatch(context, /README\.md/);
 });
 
-test('stream pacing emits small chunks over time and finish drains the final text', async () => {
+test('text streamer forwards provider chunks immediately without extra pacing', async () => {
   const output = [];
-  const streamer = PortfolioAI.createTextStreamer(chunk => output.push(chunk), { chunkSize: 2, intervalMs: 15 });
-  streamer.push('hello world');
+  const streamer = PortfolioAI.createTextStreamer(chunk => output.push(chunk));
+  streamer.push('hello ');
+  streamer.push('world');
 
-  assert.deepEqual(output, []);
-  await new Promise(resolve => setTimeout(resolve, 20));
-  assert.equal(output.join('').length, 2);
+  assert.deepEqual(output, ['hello ', 'world']);
   await streamer.finish();
   assert.equal(output.join(''), 'hello world');
-  assert.ok(output.every(chunk => Array.from(chunk).length <= 2));
-});
-
-test('stream reset discards queued partial text', async () => {
-  const output = [];
-  const streamer = PortfolioAI.createTextStreamer(chunk => output.push(chunk), { chunkSize: 1, intervalMs: 50 });
-  streamer.push('partial');
   streamer.reset();
-  await new Promise(resolve => setTimeout(resolve, 60));
-  assert.deepEqual(output, []);
+  streamer.push('next');
+  assert.deepEqual(output, ['hello ', 'world', 'next']);
 });
 
 test('cloud chat sends the user question and context, then streams answer chunks', async () => {
