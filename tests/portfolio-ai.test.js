@@ -103,6 +103,7 @@ test('incomplete model output is routed to static fallback without marking quota
 test('edge response word limit accommodates concise recruiter answers with links', () => {
   assert.match(edgeFunctionSource, /const maxAnswerWords = 140;/);
   assert.match(edgeFunctionSource, /answer\.split\(\/\\s\+\/\)\.filter\(Boolean\)\.length > maxAnswerWords/);
+  assert.match(edgeFunctionSource, /max_tokens: 400/);
 });
 
 test('static fallback text streams in readable chunks without changing its content', async () => {

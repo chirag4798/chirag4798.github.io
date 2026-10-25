@@ -379,7 +379,7 @@ Deno.serve(async (request) => {
   try {
     const upstreamBody = JSON.stringify({
       model: 'openrouter/free',
-      max_tokens: 220,
+      max_tokens: 400,
       stream: true,
       messages: [
         {
