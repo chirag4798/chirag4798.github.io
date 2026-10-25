@@ -1,97 +1,121 @@
 (() => {
-  const menuButton = document.querySelector('.menu-toggle');
-  const mobileNav = document.querySelector('#mobile-nav');
-  const closeMenu = () => {
-    if (!menuButton || !mobileNav) return;
-    menuButton.setAttribute('aria-expanded', 'false');
-    menuButton.setAttribute('aria-label', 'Open navigation');
-    mobileNav.hidden = true;
-    document.body.classList.remove('menu-open');
-  };
+ const files={
+ 'README.md':`# Chirag Shetty\n\n<div class="meta">AI / ML ENGINEER · MUMBAI, INDIA</div>\n\nI build **AI systems that make it to production.**\n\nFrom generative image pipelines to real-time vision at the edge, I work across the full journey: model, product, platform, and the systems that keep them running.\n\n<div class="callout"><span class="metric">5+</span> years building AI　 <span class="metric">225 FPS</span> vision inference　 <span class="metric">50 FPS</span> Jetson ALPR</div>\n\n## The through-line\n\nUseful AI is an engineering discipline. The interesting part isn’t only the model. It’s making the whole thing useful: the data, latency, product surface, deployment, and what happens when something breaks.\n\nThat’s the thread across my work: shipping computer vision and generative AI into products people use, then making those systems faster, steadier, and easier to operate.\n\n## Explore this workspace\n\nChoose a file in the Explorer to open a project, career chapter, open-source repository, article, or contact details.\n\n> Start with **work/impetus-design.md** for the AI-powered fashion design platform, or **open-source/projects.md** for my public projects.`,
+ 'about.md':`# About me\n\n<img class="portrait" src="images/chirag-passport.jpg" alt="Chirag Shetty">\n\n<div class="meta">AI / ML ENGINEER · MUMBAI, INDIA</div>\n\nI’m Chirag Shetty, an AI/ML engineer focused on turning machine learning into products and services that hold up in real use.\n\nMy work spans **generative AI, computer vision, model serving, and edge deployment**. I enjoy the seams between disciplines: translating a product need into an AI workflow, making inference fit the hardware, and building the observability and recovery that production needs.\n\n## How I work\n\n- Start from the real problem and its constraints.\n- Design the complete system around the model.\n- Measure quality, latency, and cost.\n- Ship, observe, and improve with evidence.\n\n## Current focus\n\nProduction AI platforms, multimodal and agentic workflows, efficient inference, and real-time computer vision.`,
+ 'impetus-design.md':`# Fashion design, with a bigger canvas\n\n<div class="meta">JIO FYND · 2023—NOW · GENAI / MULTI-AGENT / PLATFORM</div>\n\nBuilding an AI-powered design platform that helps teams explore trends, plan collections, and move from a brief to a range of generated styles.\n\n## The challenge\n\nMake a complex design workflow feel like one coherent creative tool, with structured inputs and outputs teams can work from.\n\n## The system\n\nI defined platform architecture and built a multi-agent workflow to gather requirements, plan range architectures, and generate styles. The backend brings together **LangChain, multimodal LLMs, Flux, Stable Diffusion, and vLLM services**.\n\n## My focus\n\nConnect AI planning and generation into a modular product workflow, while keeping the underlying steps inspectable and useful to designers.\n\n<div class="callout">PRODUCT · AGENTS · MULTIMODAL AI · FASHION TECHNOLOGY</div>`,
+ 'genai-platform.md':`# A CDN that can think in images\n\n<div class="meta">JIO FYND · 2023—NOW · GENAI / INFERENCE / RELIABILITY</div>\n\nArchitected and led an AI-powered image delivery platform for Ajio, JioMart, and Tira, bringing real-time transformation into the shopping experience.\n\n## The pipeline\n\nAutomated product tagging, Stable Diffusion background generation, U2Net foreground extraction, and SRGAN upscaling run as coordinated image services.\n\n## The engineering\n\nPython and FastAPI APIs orchestrate processing and platform integrations. I applied post-training quantization to lower latency and GPU memory use, and added token-usage tracking and efficiency improvements to reduce operating costs.\n\n## Outcome\n\nThe platform contributed to a **5% increase in product engagement**. I also owned production reliability work, including monitoring, incident response, and database recovery.\n\n<div class="callout">Stable Diffusion · FastAPI · Model optimization · Production operations</div>`,
+ 'computer-vision.md':`# Video analytics, at real-time speed\n\n<div class="meta">ADAGRAD AI · 2021—2023 · COMPUTER VISION / C++ / TENSORRT</div>\n\nBuilt production video analytics for retail and access control: people counting, re-identification, semantic matching, and license-plate recognition.\n\n## Throughput\n\nC++ inference pipelines using YOLO, PyTorch, and TensorRT reached **225 FPS on NVIDIA T4 GPUs** for high-volume video analytics.\n\n## At the edge\n\nAn ALPR system on NVIDIA Jetson TX2 NX sustained **50 FPS at 90–95% accuracy** and connected to backend services for traffic-enforcement workflows.\n\n## Keeping it efficient\n\nI used PTQ and QAT to compress detection models to INT8 while preserving accuracy across distributed deployments.\n\n<div class="callout">YOLO · NVIDIA DeepStream · TensorRT · C++ · Jetson</div>`,
+ 'edge-ai.md':`# Make the model fit the world\n\n<div class="meta">OPTISOL · 2020—2021 · VISION / EDGE / OPTIMIZATION</div>\n\nDeveloped computer-vision systems for automated power-pole inspection and defect detection, then brought inference cost down through model optimization.\n\n## From model to workflow\n\nTensorFlow and OpenCV powered automated inspection, with FastAPI and Flask services connecting models to practical ML workflows.\n\n## Optimization\n\nQuantization-aware training and model sparsity reduced latency by **50%**. This work built my grounding in the tradeoffs between latency, memory, and accuracy on the device that has to run the model.\n\n<div class="callout">TensorFlow · OpenCV · FastAPI · QAT · Model sparsity</div>`,
+ 'projects.md':`# Open-source & selected projects\n\n<div class="meta">CODE · PROTOTYPES · EXPERIMENTS</div>\n\n- [ByteTrack → DeepStream](https://github.com/chirag4798/ByteTrack) — C++ port integrated with NVIDIA DeepStream for GPU-accelerated video analytics; linked repository is my public ByteTrack fork.\n- [DeepStream 101](https://github.com/chirag4798/DeepStream101) — code and practical notes for getting started with NVIDIA DeepStream and real-time video pipelines.\n- [Shop the Look](https://github.com/chirag4798/Shop-The-Look) — visual product discovery using object detection and image embeddings to find similar catalog items.\n- [Multi-layered perceptron](https://github.com/chirag4798/Multi-Layered-Perceptron) — neural network built with vector and matrix operations to explore backpropagation and optimization.\n- [SLAM](https://github.com/chirag4798/SLAM) — hands-on exploration of simultaneous localization and mapping in Python.\n- [Greener manufacturing](https://github.com/chirag4798/Mercedes-Benz-Greener-Manufacturing) — modeling vehicle testing bench time using Daimler manufacturing data.\n- [Clustering locations](https://github.com/chirag4798/Clustering-Locations) — exploring business locations through locality clustering and data mining.\n\n## More code\n\nBrowse [github.com/chirag4798](https://github.com/chirag4798) for repositories and current activity.`,
+ 'articles.md':`# Articles & field notes\n\n<div class="meta">COMPUTER VISION · NVIDIA DEEPSTREAM</div>\n\n- [NVIDIA DeepStream 101](https://chirag4798.medium.com/nvidia-deepstream-101-a-beginners-guide-to-real-time-computer-vision-afefcb5d7fba) — A beginner’s guide to real-time computer vision.\n- [Build your first DeepStream application](https://medium.com/@chirag4798/nvidia-deepstream-101-a-step-by-step-guide-to-creating-your-first-deepstream-application-68148753cf96) — A step-by-step walkthrough of the video pipeline.\n- [Shop the Look](https://chirag4798.medium.com/shop-the-look-8d686bde7de8) — End-to-end fashion recommendations through visual similarity.\n\n## Read more\n\n[chirag4798.medium.com](https://chirag4798.medium.com/)`,
+ 'experience.md':`# Experience\n\n<div class="meta">BUILDING AI PRODUCTS · 2020—NOW</div>\n\n## Jio Fynd · AI/ML engineering\n**2023—Now**\n\nArchitecting generative AI platforms and multi-agent workflows for fashion design and image delivery. Focus areas include platform design, multimodal AI, inference optimization, production reliability, and operational ownership.\n\n## Adagrad AI · Computer vision\n**2021—2023**\n\nBuilt real-time video analytics and edge ALPR systems. Delivered C++/TensorRT pipelines up to 225 FPS on NVIDIA T4 and 50 FPS on Jetson TX2 NX, with quantized models for distributed deployments.\n\n## Optisol · Computer vision and edge AI\n**2020—2021**\n\nDeveloped automated power-pole inspection and defect detection systems, applying quantization-aware training and sparsity to reduce latency.\n\n## The continuing thread\n\nMove useful AI from the model into the product, then keep improving the complete system.`,
+ 'toolkit.md':`# Toolkit\n\n<div class="meta">MODELS · SYSTEMS · PRODUCTION</div>\n\n## Models & intelligence\n\nComputer vision, multimodal models, generative image systems, and model development.\n\n**PyTorch · TensorFlow · YOLO · Stable Diffusion · Flux · Multimodal LLMs · LangChain**\n\n## Serving & platform\n\nAPIs, orchestration, model serving, and service boundaries for real products.\n\n**Python · C++ · FastAPI · vLLM · ONNX Runtime · PostgreSQL · GCP**\n\n## Inference & operations\n\nOptimization and operational ownership: fitting models to hardware, observing system behavior, and responding to production issues.\n\n**TensorRT · DeepStream · PTQ / QAT · INT8 · Docker · Kubernetes · Monitoring**`,
+ 'contact.md':`# Let’s build something useful\n\n<div class="meta">OPEN TO GOOD PROBLEMS</div>\n\nIf you’re working on production AI, GenAI platforms, or real-time computer vision, I’d like to hear what you’re building.\n\n- Email: [chirag4798@gmail.com](mailto:chirag4798@gmail.com)\n- [LinkedIn](https://www.linkedin.com/in/chirag--shetty/)\n- [GitHub](https://github.com/chirag4798)\n- [Medium](https://chirag4798.medium.com/)`
+ };
+ files['jio-fynd.md']=`# Jio Fynd
 
-  menuButton?.addEventListener('click', () => {
-    const isOpen = menuButton.getAttribute('aria-expanded') === 'true';
-    menuButton.setAttribute('aria-expanded', String(!isOpen));
-    menuButton.setAttribute('aria-label', isOpen ? 'Open navigation' : 'Close navigation');
-    mobileNav.hidden = isOpen;
-    document.body.classList.toggle('menu-open', !isOpen);
-  });
-  mobileNav?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMenu));
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeMenu();
-  });
+<div class="meta">SOFTWARE DEVELOPMENT ENGINEER II (MACHINE LEARNING) · SEPTEMBER 2023—PRESENT</div>
 
-  const filterButtons = [...document.querySelectorAll('.filter-chip')];
-  const projects = [...document.querySelectorAll('.project-card')];
-  filterButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const filter = button.dataset.filter;
-      filterButtons.forEach((item) => {
-        const selected = item === button;
-        item.classList.toggle('selected', selected);
-        item.setAttribute('aria-pressed', String(selected));
-      });
-      projects.forEach((project) => {
-        project.hidden = filter !== 'all' && !project.dataset.category.split(' ').includes(filter);
-      });
-    });
-  });
+I work across generative AI product development and production image infrastructure for Ajio, JioMart, and Tira.
 
-  const tabs = [...document.querySelectorAll('.toolkit-tabs [role="tab"]')];
-  const selectTab = (tab, focus = false) => {
-    tabs.forEach((item) => {
-      const selected = item === tab;
-      item.setAttribute('aria-selected', String(selected));
-      item.tabIndex = selected ? 0 : -1;
-      document.getElementById(item.getAttribute('aria-controls')).hidden = !selected;
-    });
-    if (focus) tab.focus();
-  };
-  tabs.forEach((tab, index) => {
-    tab.addEventListener('click', () => selectTab(tab));
-    tab.addEventListener('keydown', (event) => {
-      let nextIndex = index;
-      if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
-      else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length;
-      else if (event.key === 'Home') nextIndex = 0;
-      else if (event.key === 'End') nextIndex = tabs.length - 1;
-      else return;
-      event.preventDefault();
-      selectTab(tabs[nextIndex], true);
-    });
-  });
+## Impetus · Fashion Design Platform
 
-  const progressBar = document.querySelector('.reading-progress span');
-  let frameRequested = false;
-  const updateProgress = () => {
-    const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-    const percent = scrollable > 0 ? Math.min(100, (window.scrollY / scrollable) * 100) : 0;
-    progressBar.style.width = `${percent}%`;
-    frameRequested = false;
-  };
-  window.addEventListener('scroll', () => {
-    if (!frameRequested) {
-      frameRequested = true;
-      window.requestAnimationFrame(updateProgress);
-    }
-  }, { passive: true });
-  updateProgress();
+Designed platform architecture for AI-assisted design generation and variation. The workflow connects collection planning and style generation through LangChain, multimodal large language models, Flux, Stable Diffusion, and vLLM services.
 
-  const navLinks = [...document.querySelectorAll('.topbar nav a[href^="#"]')];
-  const sections = navLinks.map((link) => document.querySelector(link.getAttribute('href'))).filter(Boolean);
-  if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        navLinks.forEach((link) => {
-          if (link.getAttribute('href') === `#${entry.target.id}`) link.setAttribute('aria-current', 'location');
-          else link.removeAttribute('aria-current');
-        });
-      });
-    }, { rootMargin: '-35% 0px -55% 0px' });
-    sections.forEach((section) => observer.observe(section));
+## Generative AI image delivery
+
+Architected and led AI image-transformation services for Ajio, JioMart, and Tira, contributing to a **5% increase in product engagement**. The pipeline includes automated product tagging, Stable Diffusion background generation, U2Net foreground extraction, and SRGAN upscaling.
+
+## Production engineering
+
+Built Python and FastAPI services for image-processing orchestration. Applied post-training quantization to reduce inference latency and GPU memory use, improved token efficiency, and owned monitoring, incident response, and database recovery.`;
+ files['adagrad-ai.md']=`# Adagrad AI
+
+<div class="meta">MACHINE LEARNING ENGINEER · SEPTEMBER 2021—AUGUST 2023</div>
+
+Built real-time computer-vision systems for retail analytics, access control, and traffic enforcement.
+
+## People analytics
+
+Developed YOLO-based people analytics for person counting, person re-identification, and semantic matching.
+
+## Real-time video analytics
+
+Built C++ inference pipelines with YOLO, PyTorch, and TensorRT reaching **225 FPS on NVIDIA T4 GPUs**. Compressed detection models to INT8 with post-training quantization and quantization-aware training while preserving accuracy across distributed deployments.
+
+## Edge ALPR
+
+Developed Automated License Plate Recognition on NVIDIA Jetson TX2 NX, sustaining **50 FPS at 90–95% accuracy**, integrated with backend traffic-enforcement workflows.`;
+ files['optisol.md']=`# Optisol Business Solutions
+
+<div class="meta">MACHINE LEARNING ENGINEER · NOVEMBER 2020—SEPTEMBER 2021</div>
+
+Built computer-vision and machine-learning workflows for infrastructure inspection and automated testing.
+
+## Power-pole inspection
+
+Developed TensorFlow and OpenCV defect-detection systems for automated power-pole inspection. Quantization-aware training and model sparsity reduced latency by **50%**.
+
+## ML backend workflows
+
+Built FastAPI and Flask services for ML pipelines, plus a Q-learning system for automated website testing.`;
+ files['resume.md']=`# Resume
+
+Download my current AI/ML and GenAI resume below. It includes my experience, technical strengths, selected open-source work, and articles.`;
+ function render(md){let raw=md.replace(/^### (.*)$/gm,'<h3>$1</h3>').replace(/^## (.*)$/gm,'<h2>$1</h2>').replace(/^# (.*)$/gm,'<h1>$1</h1>').replace(/^<div class="meta">(.*?)<\/div>$/gm,'<div class="meta">$1</div>').replace(/^> (.*)$/gm,'<blockquote>$1</blockquote>').replace(/^- (.*)$/gm,'<li>$1</li>');raw=raw.split(/\n\n+/).map(block=>{if(/^<(h[1-3]|div|blockquote|li|img)/.test(block))return block;if(block.startsWith('<li>'))return `<ul>${block}</ul>`;return `<p>${block}</p>`}).join('\n');return raw.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noreferrer">$1 ↗</a>')}
+ const tree=[...document.querySelectorAll('.tree-file')],response=document.getElementById('response'),welcome=document.querySelector('.welcome');
+ const resumePath='assets/files/Chirag_Shetty_Resume.pdf';
+ const resumeCard=()=>`<a class="attachment-card" href="${resumePath}" download="Chirag_Shetty_Resume.pdf"><span class="pdf-badge">PDF</span><span class="attachment-name"><strong>Chirag_Shetty_Resume.pdf</strong><small>AI / ML Engineer · 2 pages</small></span><span class="download-icon" aria-hidden="true">↓</span></a>`;
+ const sectionPrompts={'README.md':'Give me an overview','about.md':'Tell me about Chirag','jio-fynd.md':'Tell me about Chirag’s work at Jio Fynd','adagrad-ai.md':'Tell me about Chirag’s work at Adagrad AI','optisol.md':'Tell me about Chirag’s work at Optisol Business Solutions','projects.md':'Show me Chirag’s open-source work','articles.md':'Show me Chirag’s articles','experience.md':'Give me Chirag’s experience overview','toolkit.md':'What tools does Chirag work with?','resume.md':'Can you share Chirag’s resume?','contact.md':'How can I contact Chirag?'};
+ function showFile(name){if(!files[name])return;tree.forEach(b=>b.classList.toggle('selected',b.dataset.file===name));welcome.hidden=true;response.hidden=false;const body=render(files[name])+(name==='resume.md'?resumeCard():'');response.innerHTML=`<div class="user-message">${sectionPrompts[name]||'Give me an overview'}</div><div class="assistant-message"><div class="assistant-avatar">✳</div><div class="assistant-content">${body}</div></div>`;if(innerWidth<=720)document.getElementById('explorer').classList.add('closed');document.querySelector('.chat-scroll').scrollTop=document.querySelector('.chat-scroll').scrollHeight}
+ tree.forEach(button=>button.addEventListener('click',()=>showFile(button.dataset.file)));
+ document.querySelector('.side-actions button').addEventListener('click',()=>{response.hidden=true;response.replaceChildren();welcome.hidden=false;tree.forEach(button=>button.classList.toggle('selected',button.dataset.file==='README.md'));document.getElementById('chatInput').value='';document.getElementById('chatInput').focus()});
+ document.querySelectorAll('.side-actions button')[1].addEventListener('click',()=>{const q=prompt('Search portfolio sections');if(!q)return;const match=tree.find(button=>button.textContent.toLowerCase().includes(q.toLowerCase()));if(match)showFile(match.dataset.file)});
+ document.querySelectorAll('.suggestions button').forEach(button=>button.addEventListener('click',()=>showFile(button.dataset.file)));
+ const explorer=document.getElementById('explorer');document.getElementById('explorerToggle').addEventListener('click',()=>explorer.classList.toggle('closed'));
+ const topics=[
+  {key:'jio-fynd.md',aliases:['jio fynd','fynd','impetus','ajio','jiomart','tira','fashion design','image delivery','image transformation','generative image','stable diffusion','flux'],keywords:['langchain','multimodal','vllm','u2net','srgan','quantization','engagement','agent','collection','design']},
+  {key:'adagrad-ai.md',aliases:['adagrad','people analytics','person counting','person re identification','re identification','license plate','alpr','jetson','deepstream','t4 gpu','traffic enforcement'],keywords:['yolo','tensorrt','225 fps','50 fps','accuracy','retail','access control','video analytics']},
+  {key:'optisol.md',aliases:['optisol','power pole','power poles','pole inspection','defect detection','website testing'],keywords:['tensorflow','opencv','sparsity','qat','50%','flask','q learning']},
+  {key:'projects.md',aliases:['project','projects','open source','open-source','github','repositories','repository','repo','public code','side projects'],keywords:['bytetrack','slam','clustering','perceptron','shop the look','deepstream 101']},
+  {key:'articles.md',aliases:['articles','article','blog','blogs','writing','wrote','medium','publications'],keywords:['beginner guide','step by step','walkthrough','shop the look']},
+  {key:'experience.md',aliases:['experience','career','employment','work history','companies','organization','organizations','organisation','organisations','employer','employers','achievements','impact'],keywords:['2020','2021','2023','present','engineer']},
+  {key:'toolkit.md',aliases:['toolkit','skills','skill','tech stack','technology','technologies','tools','programming language','programming languages','languages'],keywords:['python','c++','pytorch','tensorflow','fastapi','postgresql','kubernetes','docker','onnx','gcp','int8']},
+  {key:'contact.md',aliases:['contact','email','reach chirag','linkedin','get in touch'],keywords:['gmail','linkedin','github','medium']},
+  {key:'README.md',aliases:['overview','introduction','who is chirag','about chirag','about you','summary'],keywords:['production ai','machine learning','computer vision','generative ai']}
+ ];
+ const stopWords=new Set('a an and are as at be can could did do does for from give he her his how i in is it me my of on or tell that the their them this to what when where which who why with would you your chirag'.split(' '));
+ function normalizeText(value){return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9+#%]+/g,' ').trim().replace(/\s+/g,' ')}
+ function matchTopics(question){
+  const normalized=normalizeText(question),terms=[...new Set(normalized.split(' ').filter(word=>word.length>2&&!stopWords.has(word)))];
+  const ranked=topics.map(topic=>{
+   const aliases=topic.aliases.map(normalizeText),keywords=topic.keywords.map(normalizeText);
+   const aliasHits=aliases.filter(phrase=>normalized.includes(phrase));
+   const keywordHits=keywords.filter(phrase=>normalized.includes(phrase));
+   const searchable=new Set(normalizeText(topic.key+' '+files[topic.key]).split(' '));
+   const contentHits=terms.filter(term=>searchable.has(term));
+   return {key:topic.key,score:aliasHits.reduce((n,phrase)=>n+(phrase.includes(' ')?5:4),0)+keywordHits.length*3+contentHits.length,aliasHits,keywordHits,contentHits};
+  }).sort((a,b)=>b.score-a.score);
+  const direct=ranked.filter(topic=>topic.aliasHits.length>0||topic.keywordHits.length>0);
+  if(direct.length>1&&direct.slice(0,3).some(topic=>topic.aliasHits.length))return direct.slice(0,3);
+  const best=ranked[0];
+  return best&&(best.score>=4&&(best.aliasHits.length||best.keywordHits.length||best.contentHits.length>=2))?[best]:[];
+ }
+ function send(){
+  const input=document.getElementById('chatInput'),question=input.value.trim();if(!question)return;
+  welcome.hidden=true;response.hidden=false;
+  const safeQuestion=question.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const resumeRequest=/\b(resume|cv|curriculum vitae)\b/i.test(question);
+  let answer;
+  if(resumeRequest)answer=`<p>Here’s my current resume. You can download the PDF here:</p>${resumeCard()}`;
+  else {
+   const matches=matchTopics(question);
+   answer=matches.length?matches.map(topic=>render(files[topic.key])).join('<hr>'):`<p>I don’t have a reliable answer to that in the information on this site. I can help with Chirag’s organizations and experience, projects and open-source work, articles, skills, contact details, or resume.</p>`;
   }
-
-  const year = document.querySelector('#year');
-  if (year) year.textContent = String(new Date().getFullYear());
+  response.insertAdjacentHTML('beforeend',`<div class="user-message">${safeQuestion}</div><div class="assistant-message"><div class="assistant-avatar">✳</div><div class="assistant-content">${answer}</div></div>`);
+  input.value='';document.querySelector('.chat-scroll').scrollTop=document.querySelector('.chat-scroll').scrollHeight;
+ }
+ document.getElementById('sendButton').addEventListener('click',send);document.getElementById('chatInput').addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}});
+ if(innerWidth<=720)document.getElementById('explorer').classList.add('closed');window.addEventListener('resize',()=>{if(innerWidth>720)document.getElementById('explorer').classList.remove('closed')});
+ const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;setTimeout(()=>{document.body.classList.add('ready');document.body.classList.remove('booting')},reduced?80:950);
 })();
