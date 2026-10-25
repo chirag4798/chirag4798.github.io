@@ -110,6 +110,8 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
   response.insertAdjacentHTML('beforeend',`<div class="user-message">${safeQuestion}</div>`);
   const pending=document.createElement('div');pending.className='assistant-message';pending.innerHTML='<div class="assistant-avatar">✳</div><div class="assistant-content ai-thinking">Thinking…</div>';response.append(pending);
   input.value='';input.disabled=true;sendButton.disabled=true;
+  const pendingContent=pending.querySelector('.assistant-content');let streamedAnswer='';
+  const showStreamedText=chunk=>{streamedAnswer+=chunk;pendingContent.textContent=streamedAnswer};
   try{
    let answer;
    if(resumeRequest)answer=`<p>Here’s my current resume. You can download the PDF here:</p>${resumeCard()}`;
@@ -121,10 +123,11 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
      answer='<p>I’m Chirag’s portfolio assistant. I can help with his experience, projects, open-source work, articles, skills, contact details, or resume.</p>';
     }else{
      const relevantFiles=matches.map(topic=>topic.key);
-     const cloudAnswer=await answerWithCloud(question,relevantFiles);
-     const nanoAnswer=cloudAnswer||await answerWithNano(question);
+     const cloudAnswer=await answerWithCloud(question,relevantFiles,showStreamedText);
+     if(!cloudAnswer){streamedAnswer='';pendingContent.textContent=''}
+     const nanoAnswer=cloudAnswer||await answerWithNano(question,showStreamedText);
      if(nanoAnswer)answer=window.PortfolioAI.renderAnswer(nanoAnswer,Object.keys(files),approvedExternalLinks);
-     else answer=matches.map(topic=>render(files[topic.key])).join('<hr>');
+     else answer=window.PortfolioAI.renderAnswer(window.PortfolioAI.buildFallbackAnswer(relevantFiles),Object.keys(files),approvedExternalLinks);
     }
    }
    pending.remove();response.insertAdjacentHTML('beforeend',`<div class="assistant-message"><div class="assistant-avatar">✳</div><div class="assistant-content">${answer}</div></div>`);
@@ -149,11 +152,11 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
   const status=await window.PortfolioAI.getAvailability(window.LanguageModel);
   setModelStatus(status);
  }
- async function answerWithCloud(question,relevantFiles){
+ async function answerWithCloud(question,relevantFiles,onDelta){
   if(!chatEndpoint)return null;
   try{
    setAiStatus('Asking the portfolio assistant…');
-   const answer=await window.PortfolioAI.requestCloudAnswer(chatEndpoint,question,window.PortfolioAI.buildPortfolioContext(files,relevantFiles));
+   const answer=await window.PortfolioAI.requestCloudAnswer(chatEndpoint,question,window.PortfolioAI.buildPortfolioContext(files,relevantFiles),globalThis.fetch,onDelta);
    if(answer)setAiStatus('Portfolio AI · OpenRouter free models');
    return answer;
   }catch(_error){
@@ -161,7 +164,7 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
    return null;
   }
  }
- async function answerWithNano(question){
+ async function answerWithNano(question,onDelta){
   if(!window.LanguageModel||aiAvailability==='unsupported'||aiAvailability==='unavailable')return null;
   try{
    if(!nanoSession){
@@ -173,7 +176,14 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
    }
    if(!nanoSession){setModelStatus('unsupported');return null}
    setAiStatus('Answering on this device…');
-   const answer=await nanoSession.prompt(question);
+   let answer='';
+   if(typeof nanoSession.promptStreaming==='function'){
+    const stream=nanoSession.promptStreaming(question);
+    for await(const chunk of stream){if(typeof chunk==='string'){answer+=chunk;if(typeof onDelta==='function')onDelta(chunk)}}
+   }else{
+    answer=await nanoSession.prompt(question);
+    if(typeof answer==='string'&&answer&&typeof onDelta==='function')onDelta(answer);
+   }
    setModelStatus('available');
    return typeof answer==='string'&&answer.trim()?answer.trim():null;
   }catch(_error){

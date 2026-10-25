@@ -8,6 +8,25 @@ const files = {
   'projects.md': '# Open source\nByteTrack and DeepStream.',
 };
 
+function eventStream(events, onFirstChunk) {
+  const encoder = new TextEncoder();
+  let completed = false;
+  return new Response(new ReadableStream({
+    async start(controller) {
+      controller.enqueue(encoder.encode(events[0]));
+      onFirstChunk?.(() => completed);
+      await new Promise(resolve => setTimeout(resolve, 5));
+      for (const event of events.slice(1)) controller.enqueue(encoder.encode(event));
+      controller.close();
+      completed = true;
+    },
+  }), { headers: { 'Content-Type': 'text/event-stream' } });
+}
+
+function delta(text) {
+  return `event: delta\ndata: ${JSON.stringify({ text })}\n\n`;
+}
+
 test('system prompt includes all portfolio files and grounding/navigation rules', () => {
   const prompt = PortfolioAI.buildSystemPrompt(files);
 
@@ -36,16 +55,25 @@ test('portfolio context can be limited to only relevant sections', () => {
   assert.doesNotMatch(context, /README\.md/);
 });
 
-test('cloud chat sends the user question and full portfolio context, then returns the answer', async () => {
+test('cloud chat sends the user question and context, then streams answer chunks', async () => {
   let request;
+  let observedBeforeStreamCompleted = false;
+  const deltas = [];
   const answer = await PortfolioAI.requestCloudAnswer(
     'https://example.supabase.co/functions/v1/portfolio-chat',
     'Tell me about Jio Fynd',
     PortfolioAI.buildPortfolioContext(files),
     async (url, options) => {
       request = { url, options };
-      return { ok: true, json: async () => ({ answer: 'Jio Fynd builds a fashion design platform.' }) };
+      const firstEvent = delta('Jio Fynd builds ');
+      return eventStream([
+        firstEvent.slice(0, 17),
+        firstEvent.slice(17),
+        delta('a fashion design platform.'),
+        'event: done\ndata: {}\n\n',
+      ], isCompleted => { observedBeforeStreamCompleted = !isCompleted() });
     },
+    chunk => deltas.push(chunk),
   );
 
   assert.equal(request.url, 'https://example.supabase.co/functions/v1/portfolio-chat');
@@ -55,6 +83,8 @@ test('cloud chat sends the user question and full portfolio context, then return
     context: PortfolioAI.buildPortfolioContext(files),
   });
   assert.equal(answer, 'Jio Fynd builds a fashion design platform.');
+  assert.deepEqual(deltas, ['Jio Fynd builds ', 'a fashion design platform.']);
+  assert.equal(observedBeforeStreamCompleted, true);
 });
 
 test('cloud chat can send only the context selected for a personal question', async () => {
@@ -65,7 +95,7 @@ test('cloud chat can send only the context selected for a personal question', as
     PortfolioAI.buildPortfolioContext(files, ['jio-fynd.md']),
     async (_url, options) => {
       request = JSON.parse(options.body);
-      return { ok: true, json: async () => ({ answer: 'Jio Fynd builds a fashion design platform.' }) };
+      return eventStream([delta('Jio Fynd builds a fashion design platform.'), 'event: done\ndata: {}\n\n']);
     },
   );
 
@@ -79,6 +109,30 @@ test('cloud chat fails closed when the endpoint returns an error', async () => {
     PortfolioAI.requestCloudAnswer('https://example.supabase.co/chat', 'hello', 'context', async () => ({ ok: false, status: 429 })),
     /request failed \(429\)/,
   );
+});
+
+test('cloud chat rejects an upstream stream error after clearing any streamed partial answer', async () => {
+  const deltas = [];
+  await assert.rejects(
+    PortfolioAI.requestCloudAnswer(
+      'https://example.supabase.co/chat',
+      'Tell me about Jio Fynd',
+      'context',
+      async () => eventStream([delta('Partial answer'), 'event: error\ndata: {"error":"unavailable"}\n\n']),
+      chunk => deltas.push(chunk),
+    ),
+    /stream failed/,
+  );
+  assert.deepEqual(deltas, ['Partial answer']);
+});
+
+test('unavailable cloud chat fallback only links relevant sections and does not invent an answer', () => {
+  const answer = PortfolioAI.buildFallbackAnswer(['about.md', 'experience.md', 'about.md']);
+
+  assert.match(answer, /can’t reach the portfolio AI/i);
+  assert.match(answer, /\[About me\]\(about\.md\)/);
+  assert.match(answer, /\[Experience\]\(experience\.md\)/);
+  assert.doesNotMatch(answer, /university|degree|education/i);
 });
 
 test('availability checks request English text input and output', async () => {

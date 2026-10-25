@@ -80,6 +80,127 @@ async function checkRateLimit(ipHash: string, projectUrl: string, serviceKey: st
   return await response.json() === true;
 }
 
+function streamAnswer(upstreamBody: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
+  const reader = upstreamBody.getReader();
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+  const artifactPattern = /^(?:user safety\s*:\s*(?:safe|unsafe)\b|analysis\b|let me think\b|(?:\d+[.)]\s*)?(?:analyze the request|reference data|question mapping)\b)/i;
+
+  return new ReadableStream<Uint8Array>({
+    async start(controller) {
+      let buffer = '';
+      let answer = '';
+      let prefixBuffer = '';
+      let prefixChecked = false;
+      const send = (event: string, data: Record<string, unknown>) => {
+        controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+      };
+      const fail = () => {
+        try {
+          send('error', { error: 'Portfolio AI stream failed' });
+        } catch {
+          // The visitor may have closed the connection while the model was answering.
+        }
+        try {
+          controller.close();
+        } catch {
+          // The stream may already be cancelled or closed.
+        }
+        void reader.cancel().catch(() => {});
+      };
+      const dispatch = (block: string): boolean => {
+        const data = block.split(/\r?\n/)
+          .filter((line) => line.startsWith('data:'))
+          .map((line) => line.slice(5).trimStart())
+          .join('\n');
+        if (!data) return false;
+        if (data === '[DONE]') {
+          if (!answer.trim() || artifactPattern.test(answer.trim())) {
+            fail();
+            return true;
+          }
+          if (prefixBuffer) send('delta', { text: prefixBuffer });
+          send('done', {});
+          controller.close();
+          return true;
+        }
+
+        let payload: { choices?: Array<{ delta?: { content?: unknown } }> };
+        try {
+          payload = JSON.parse(data);
+        } catch {
+          return false;
+        }
+        const text = payload.choices?.[0]?.delta?.content;
+        if (typeof text !== 'string' || !text) return false;
+        answer += text;
+        if (answer.split(/\s+/).filter(Boolean).length > 80) {
+          fail();
+          return true;
+        }
+
+        if (!prefixChecked) {
+          prefixBuffer += text;
+          if (prefixBuffer.length >= 48 || /\s/.test(prefixBuffer) && artifactPattern.test(prefixBuffer.trim())) {
+            if (artifactPattern.test(prefixBuffer.trim())) {
+              fail();
+              return true;
+            }
+            prefixChecked = true;
+            send('delta', { text: prefixBuffer });
+            prefixBuffer = '';
+          }
+        } else {
+          send('delta', { text });
+        }
+        return false;
+      };
+
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+          buffer += decoder.decode(value ?? new Uint8Array(), { stream: !done });
+          let separator: RegExpExecArray | null;
+          while ((separator = /\r?\n\r?\n/.exec(buffer)) !== null) {
+            const block = buffer.slice(0, separator.index);
+            buffer = buffer.slice(separator.index + separator[0].length);
+            if (dispatch(block)) return;
+          }
+          if (done) break;
+        }
+        if (buffer.trim() && dispatch(buffer)) return;
+        if (!answer.trim() || artifactPattern.test(answer.trim())) {
+          fail();
+          return;
+        }
+        if (prefixBuffer) send('delta', { text: prefixBuffer });
+        send('done', {});
+        controller.close();
+      } catch {
+        fail();
+      }
+    },
+    cancel() {
+      return reader.cancel();
+    },
+  });
+}
+
+function eventStreamResponse(body: ReadableStream<Uint8Array>, origin: string): Response {
+  return new Response(body, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+      'X-Accel-Buffering': 'no',
+      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Vary': 'Origin',
+    },
+  });
+}
+
 Deno.serve(async (request) => {
   const origin = request.headers.get('Origin') ?? '';
   if (!allowedOrigins.has(origin)) {
@@ -157,6 +278,7 @@ Deno.serve(async (request) => {
         model: 'openrouter/free',
         max_tokens: 160,
         reasoning_effort: 'none',
+        stream: true,
         messages: [
           {
             role: 'system',
@@ -174,20 +296,8 @@ Deno.serve(async (request) => {
     if (!upstream.ok) {
       return jsonResponse({ error: 'Portfolio AI is temporarily unavailable' }, 503, origin);
     }
-
-    const result = await upstream.json();
-    const answer = result?.choices?.[0]?.message?.content;
-    if (typeof answer !== 'string' || !answer.trim()) {
-      return jsonResponse({ error: 'Portfolio AI returned no answer' }, 502, origin);
-    }
-
-    const cleanAnswer = answer.trim();
-    const modelArtifact = /^(?:user safety\s*:\s*(?:safe|unsafe)\b|analysis\b|let me think\b|(?:\d+[.)]\s*)?(?:analyze the request|reference data|question mapping)\b)/i;
-    if (cleanAnswer.split(/\s+/).length > 80 || modelArtifact.test(cleanAnswer)) {
-      return jsonResponse({ error: 'Portfolio AI returned no usable answer' }, 502, origin);
-    }
-
-    return jsonResponse({ answer: cleanAnswer }, 200, origin);
+    if (!upstream.body) return jsonResponse({ error: 'Portfolio AI returned no answer' }, 502, origin);
+    return eventStreamResponse(streamAnswer(upstream.body), origin);
   } catch {
     return jsonResponse({ error: 'Portfolio AI is temporarily unavailable' }, 503, origin);
   }
