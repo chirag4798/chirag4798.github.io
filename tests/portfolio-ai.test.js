@@ -216,13 +216,11 @@ test('overview does not show non-clickable virtual file paths', () => {
   assert.doesNotMatch(portfolioClientSource, /Choose a file in the Explorer|from the Explorer to explore those areas/);
 });
 
-test('overview highlights broad AI experience rather than project-specific FPS benchmarks', () => {
+test('overview states the practical impact of Chirag’s ML experience', () => {
   const overview = portfolioClientSource.match(/'README\.md':`([\s\S]*?)`,\n 'about\.md'/)?.[1] || '';
   assert.ok(overview, 'README portfolio overview is present');
   assert.doesNotMatch(overview, /\bFPS\b/);
-  assert.match(overview, /5\+ years<\/span> building AI/);
-  assert.match(overview, /GenAI platforms/);
-  assert.match(overview, /Computer vision systems/);
+  assert.match(overview, /5\+ years<\/span> turning machine learning into products people use/);
 });
 
 test('sidebar pages and static chat answers use the typewriter without a blue textarea outline', () => {
