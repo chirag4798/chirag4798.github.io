@@ -216,6 +216,15 @@ test('overview does not show non-clickable virtual file paths', () => {
   assert.doesNotMatch(portfolioClientSource, /Choose a file in the Explorer|from the Explorer to explore those areas/);
 });
 
+test('overview highlights broad AI experience rather than project-specific FPS benchmarks', () => {
+  const overview = portfolioClientSource.match(/'README\.md':`([\s\S]*?)`,\n 'about\.md'/)?.[1] || '';
+  assert.ok(overview, 'README portfolio overview is present');
+  assert.doesNotMatch(overview, /\bFPS\b/);
+  assert.match(overview, /5\+ years<\/span> building AI/);
+  assert.match(overview, /GenAI platforms/);
+  assert.match(overview, /Computer vision systems/);
+});
+
 test('sidebar pages and static chat answers use the typewriter without a blue textarea outline', () => {
   assert.match(portfolioClientSource, /async function typeRichContent\(/);
   assert.match(portfolioClientSource, /void typeRichContent\(response\.querySelector\('\.assistant-content'\),generation\)/);
