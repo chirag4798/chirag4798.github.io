@@ -6,7 +6,7 @@ const files = {
   'README.md': '# Overview\nProduction AI work. [Portfolio](https://chirag4798.github.io/)',
   'jio-fynd.md': '# Jio Fynd\nFashion design platform.',
   'projects.md': '# Open source\nByteTrack and DeepStream.',
-  'portfolio-profile.md': '# Profile\nVellore Institute of Technology. [GitHub](https://github.com/chirag4798)',
+  'portfolio-profile.md': '# Profile\nVellore Institute of Technology. Age: 28 as of October 2026. Born July 4, 1998. Ethnicity: Indian. Blood group: A+. [GitHub](https://github.com/chirag4798)',
 };
 
 function eventStream(events, onFirstChunk) {
@@ -37,6 +37,8 @@ test('system prompt includes all portfolio files and grounding/navigation rules'
   assert.match(prompt, /ByteTrack and DeepStream/);
   assert.match(prompt, /Do not invent/);
   assert.match(prompt, /Open source/);
+  assert.match(prompt, /only when directly asked/i);
+  assert.match(prompt, /Do not volunteer/i);
 });
 
 test('portfolio context contains every section as plain text', () => {
@@ -46,6 +48,7 @@ test('portfolio context contains every section as plain text', () => {
   assert.match(context, /### jio-fynd\.md/);
   assert.match(context, /### projects\.md/);
   assert.match(context, /### portfolio-profile\.md/);
+  assert.match(context, /Blood group: A\+/);
   assert.doesNotMatch(context, /<[^>]+>/);
 });
 

@@ -30,6 +30,12 @@ Software Development Engineer with 5+ years of experience building production ge
 
 Vellore Institute of Technology (VIT), Vellore, 2016–2020. Bachelor of Technology in Mechanical Engineering. CGPA: 8.33/10.
 
+## Personal facts — answer only when directly asked
+
+- Date of birth: 4 July 1998. Age: 28 as of October 2026. Use the birth date to calculate age when a current date is available; do not volunteer the birth date unless directly asked for it.
+- Ethnicity: Indian.
+- Blood group: A+.
+
 ## Skills from the resume
 
 Generative AI: Stable Diffusion, Flux, vLLM, multimodal LLMs, Super Resolution GAN. LLM frameworks: LangChain, LangGraph, LlamaIndex, Hugging Face, agentic systems, RAG. Languages: Python, C++. Backend: FastAPI, Flask, REST APIs, JWT/OAuth2. Optimization: TensorRT, ONNX/ONNX Runtime, PTQ, QAT. Cloud/DevOps: GCP, Docker, Kubernetes, CI/CD. Databases: PostgreSQL, SQL. Also Git, Linux, logging, monitoring, and production debugging.
