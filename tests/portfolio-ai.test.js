@@ -6,6 +6,7 @@ const files = {
   'README.md': '# Overview\nProduction AI work. [Portfolio](https://chirag4798.github.io/)',
   'jio-fynd.md': '# Jio Fynd\nFashion design platform.',
   'projects.md': '# Open source\nByteTrack and DeepStream.',
+  'portfolio-profile.md': '# Profile\nVellore Institute of Technology. [GitHub](https://github.com/chirag4798)',
 };
 
 function eventStream(events, onFirstChunk) {
@@ -44,6 +45,7 @@ test('portfolio context contains every section as plain text', () => {
   assert.match(context, /### README\.md/);
   assert.match(context, /### jio-fynd\.md/);
   assert.match(context, /### projects\.md/);
+  assert.match(context, /### portfolio-profile\.md/);
   assert.doesNotMatch(context, /<[^>]+>/);
 });
 
@@ -51,8 +53,32 @@ test('portfolio context can be limited to only relevant sections', () => {
   const context = PortfolioAI.buildPortfolioContext(files, ['jio-fynd.md']);
 
   assert.match(context, /Fashion design platform/);
-  assert.doesNotMatch(context, /ByteTrack/);
+  assert.match(context, /Vellore Institute of Technology/);
+  assert.match(context, /https:\/\/github\.com\/chirag4798/);
+  assert.doesNotMatch(context, /Multi-layered perceptron/);
   assert.doesNotMatch(context, /README\.md/);
+});
+
+test('stream pacing emits small chunks over time and finish drains the final text', async () => {
+  const output = [];
+  const streamer = PortfolioAI.createTextStreamer(chunk => output.push(chunk), { chunkSize: 2, intervalMs: 15 });
+  streamer.push('hello world');
+
+  assert.deepEqual(output, []);
+  await new Promise(resolve => setTimeout(resolve, 20));
+  assert.equal(output.join('').length, 2);
+  await streamer.finish();
+  assert.equal(output.join(''), 'hello world');
+  assert.ok(output.every(chunk => Array.from(chunk).length <= 2));
+});
+
+test('stream reset discards queued partial text', async () => {
+  const output = [];
+  const streamer = PortfolioAI.createTextStreamer(chunk => output.push(chunk), { chunkSize: 1, intervalMs: 50 });
+  streamer.push('partial');
+  streamer.reset();
+  await new Promise(resolve => setTimeout(resolve, 60));
+  assert.deepEqual(output, []);
 });
 
 test('cloud chat sends the user question and context, then streams answer chunks', async () => {

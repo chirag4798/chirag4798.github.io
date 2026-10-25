@@ -12,6 +12,51 @@
  'toolkit.md':`# Toolkit\n\n<div class="meta">MODELS · SYSTEMS · PRODUCTION</div>\n\n## Models & intelligence\n\nComputer vision, multimodal models, generative image systems, and model development.\n\n**PyTorch · TensorFlow · YOLO · Stable Diffusion · Flux · Multimodal LLMs · LangChain**\n\n## Serving & platform\n\nAPIs, orchestration, model serving, and service boundaries for real products.\n\n**Python · C++ · FastAPI · vLLM · ONNX Runtime · PostgreSQL · GCP**\n\n## Inference & operations\n\nOptimization and operational ownership: fitting models to hardware, observing system behavior, and responding to production issues.\n\n**TensorRT · DeepStream · PTQ / QAT · INT8 · Docker · Kubernetes · Monitoring**`,
  'contact.md':`# Let’s build something useful\n\n<div class="meta">OPEN TO GOOD PROBLEMS</div>\n\nIf you’re working on production AI, GenAI platforms, or real-time computer vision, I’d like to hear what you’re building.\n\n- Email: [chirag4798@gmail.com](mailto:chirag4798@gmail.com)\n- [LinkedIn](https://www.linkedin.com/in/chirag--shetty/)\n- [GitHub](https://github.com/chirag4798)\n- [Medium](https://chirag4798.medium.com/)`
  };
+ files['portfolio-profile.md']=`# Chirag Shetty — resume and profile reference
+
+Use this compact reference to answer direct questions about Chirag, including questions focused on one employer or project. This profile is always supplied to the assistant alongside the most relevant portfolio section. Use only these facts; when something is absent, say so.
+
+## Professional summary
+
+Software Development Engineer with 5+ years of experience building production generative AI systems, including diffusion pipelines, LLM serving, and agentic workflows. Designed and deployed GenAI infrastructure for ecommerce platforms Ajio, JioMart, and Tira. Experience with Python/FastAPI services on GCP, Docker, and Kubernetes, and model inference optimization.
+
+## Experience
+
+- Jio Fynd — SDE-2 (ML Engineer), September 2023–present. Architecting an AI-powered fashion design platform for design generation, variations, and trend exploration. Designed agentic workflows using LangChain and LangGraph; built grounded RAG patterns; worked on LoRA/PEFT fine-tuning and evaluation; integrated Flux, Stable Diffusion, multimodal LLMs, and vLLM. Also architected GenAI image delivery for Ajio, JioMart, and Tira, contributing to a 5% increase in product engagement. Work includes tagging, Stable Diffusion backgrounds, U2Net foreground extraction, SRGAN upscaling, FastAPI services, PTQ, and production operations.
+- Adagrad AI — Machine Learning Engineer, September 2021–August 2023. Built retail video analytics and ALPR systems. C++/YOLO/PyTorch/TensorRT inference reached 225 FPS on NVIDIA T4 GPUs. Jetson TX2 NX ALPR reached 50 FPS at 90–95% accuracy. Applied PTQ and QAT to INT8 models and worked with Fortune 500 clients.
+- Optisol Business Solutions — Machine Learning Engineer, November 2020–September 2021. Built TensorFlow/OpenCV power-pole inspection and defect detection, a Q-learning website-testing system, and FastAPI/Flask workflows. QAT and sparsity reduced model latency by 50%.
+
+## Education
+
+Vellore Institute of Technology (VIT), Vellore, 2016–2020. Bachelor of Technology in Mechanical Engineering. CGPA: 8.33/10.
+
+## Skills from the resume
+
+Generative AI: Stable Diffusion, Flux, vLLM, multimodal LLMs, Super Resolution GAN. LLM frameworks: LangChain, LangGraph, LlamaIndex, Hugging Face, agentic systems, RAG. Languages: Python, C++. Backend: FastAPI, Flask, REST APIs, JWT/OAuth2. Optimization: TensorRT, ONNX/ONNX Runtime, PTQ, QAT. Cloud/DevOps: GCP, Docker, Kubernetes, CI/CD. Databases: PostgreSQL, SQL. Also Git, Linux, logging, monitoring, and production debugging.
+
+## Selected projects
+
+Contributed a C++ BYTETrack port integrated with NVIDIA DeepStream; built Shop the Look fashion recommendations; Mercedes-Benz Greener Manufacturing Kaggle project (top 100 leaderboard KPI score); and locality clustering using data mining and web scraping. Portfolio open-source section also links DeepStream 101, MLP, SLAM, and Clustering Locations.
+
+## Public links and contact
+
+- Portfolio: [chirag4798.github.io](https://chirag4798.github.io/)
+- GitHub profile and repositories: [github.com/chirag4798](https://github.com/chirag4798)
+- BYTETrack: [GitHub repository](https://github.com/chirag4798/ByteTrack)
+- DeepStream 101: [GitHub repository](https://github.com/chirag4798/DeepStream101)
+- Shop the Look: [GitHub repository](https://github.com/chirag4798/Shop-The-Look)
+- Multi-layered perceptron: [GitHub repository](https://github.com/chirag4798/Multi-Layered-Perceptron)
+- SLAM: [GitHub repository](https://github.com/chirag4798/SLAM)
+- Mercedes-Benz Greener Manufacturing: [GitHub repository](https://github.com/chirag4798/Mercedes-Benz-Greener-Manufacturing)
+- Clustering Locations: [GitHub repository](https://github.com/chirag4798/Clustering-Locations)
+- Articles and blog: [chirag4798.medium.com](https://chirag4798.medium.com/)
+- NVIDIA DeepStream 101 article: [Medium article](https://chirag4798.medium.com/nvidia-deepstream-101-a-beginners-guide-to-real-time-computer-vision-afefcb5d7fba)
+- Build your first DeepStream application: [Medium article](https://medium.com/@chirag4798/nvidia-deepstream-101-a-step-by-step-guide-to-creating-your-first-deepstream-application-68148753cf96)
+- Shop the Look article: [Medium article](https://chirag4798.medium.com/shop-the-look-8d686bde7de8)
+- LinkedIn: [linkedin.com/in/chirag--shetty](https://www.linkedin.com/in/chirag--shetty/)
+- Email: chirag4798@gmail.com
+- Resume PDF: assets/files/Chirag_Shetty_Resume.pdf
+- Phone listed on the resume: +91-9092866690`;
  files['jio-fynd.md']=`# Jio Fynd
 
 <div class="meta">SOFTWARE DEVELOPMENT ENGINEER II (MACHINE LEARNING) · SEPTEMBER 2023—PRESENT</div>
@@ -110,8 +155,8 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
   response.insertAdjacentHTML('beforeend',`<div class="user-message">${safeQuestion}</div>`);
   const pending=document.createElement('div');pending.className='assistant-message';pending.innerHTML='<div class="assistant-avatar">✳</div><div class="assistant-content ai-thinking">Thinking…</div>';response.append(pending);
   input.value='';input.disabled=true;sendButton.disabled=true;
-  const pendingContent=pending.querySelector('.assistant-content');let streamedAnswer='';
-  const showStreamedText=chunk=>{streamedAnswer+=chunk;pendingContent.textContent=streamedAnswer};
+  const pendingContent=pending.querySelector('.assistant-content');
+  const streamer=window.PortfolioAI.createTextStreamer(chunk=>{pendingContent.classList.remove('ai-thinking');pendingContent.textContent+=chunk});
   try{
    let answer;
    if(resumeRequest)answer=`<p>Here’s my current resume. You can download the PDF here:</p>${resumeCard()}`;
@@ -123,9 +168,11 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
      answer='<p>I’m Chirag’s portfolio assistant. I can help with his experience, projects, open-source work, articles, skills, contact details, or resume.</p>';
     }else{
      const relevantFiles=matches.map(topic=>topic.key);
-     const cloudAnswer=await answerWithCloud(question,relevantFiles,showStreamedText);
-     if(!cloudAnswer){streamedAnswer='';pendingContent.textContent=''}
-     const nanoAnswer=cloudAnswer||await answerWithNano(question,showStreamedText);
+     const cloudAnswer=await answerWithCloud(question,relevantFiles,chunk=>streamer.push(chunk));
+     if(!cloudAnswer){streamer.reset();pendingContent.textContent=''}
+     const nanoAnswer=cloudAnswer||await answerWithNano(question,chunk=>streamer.push(chunk));
+     if(nanoAnswer)await streamer.finish();
+     else {streamer.reset();pendingContent.textContent=''}
      if(nanoAnswer)answer=window.PortfolioAI.renderAnswer(nanoAnswer,Object.keys(files),approvedExternalLinks);
      else answer=window.PortfolioAI.renderAnswer(window.PortfolioAI.buildFallbackAnswer(relevantFiles),Object.keys(files),approvedExternalLinks);
     }

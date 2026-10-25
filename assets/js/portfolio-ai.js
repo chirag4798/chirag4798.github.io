@@ -8,7 +8,27 @@
 
  function buildPortfolioContext(files,selectedFiles){
   const selected=Array.isArray(selectedFiles)?new Set(selectedFiles):null;
-  return Object.entries(files).filter(([name])=>!selected||selected.has(name)).map(([name,content])=>`### ${name}\n${plainText(content)}`).join('\n\n');
+  return Object.entries(files).filter(([name])=>!selected||name==='portfolio-profile.md'||selected.has(name)).map(([name,content])=>`### ${name}\n${plainText(content)}`).join('\n\n');
+ }
+
+ function createTextStreamer(onText,{chunkSize=2,intervalMs=85}={}){
+  let queue='',timer=null;
+  const waiters=[];
+  function stop(){if(timer!==null){clearInterval(timer);timer=null}}
+  function drain(){
+   const chars=Array.from(queue),chunk=chars.splice(0,chunkSize).join('');
+   queue=chars.join('');
+   if(chunk)onText(chunk);
+   if(!queue){
+    stop();
+    while(waiters.length)waiters.shift()();
+   }
+  }
+  return {
+   push(text){queue+=String(text);if(queue&&!timer)timer=setInterval(drain,intervalMs)},
+   finish(){return queue?new Promise(resolve=>waiters.push(resolve)):Promise.resolve()},
+   reset(){stop();queue='';while(waiters.length)waiters.shift()()}
+  };
  }
 
  function buildSystemPrompt(files){
@@ -129,7 +149,7 @@
   return `I can’t reach the portfolio AI right now. ${links?`You can still explore ${links}.`:'Please try again shortly or browse the portfolio sections.'}`;
  }
 
- const api={buildPortfolioContext,buildSystemPrompt,requestCloudAnswer,getAvailability,createSession,renderAnswer,buildFallbackAnswer};
+ const api={buildPortfolioContext,buildSystemPrompt,requestCloudAnswer,getAvailability,createSession,createTextStreamer,renderAnswer,buildFallbackAnswer};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
  if(typeof globalThis!=='undefined')globalThis.PortfolioAI=api;
 })();
