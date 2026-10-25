@@ -1,0 +1,2 @@
+[functions.portfolio-chat]
+verify_jwt = false
