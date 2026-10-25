@@ -213,6 +213,59 @@ function eventStreamResponse(body: ReadableStream<Uint8Array>, origin: string): 
   });
 }
 
+function describeUpstreamError(body: unknown): { providerErrorCode?: string | number; providerErrorType?: string; providerMessage: string } {
+  if (!body || typeof body !== 'object') return { providerMessage: 'Provider returned a non-JSON error response.' };
+  const error = (body as { error?: unknown }).error;
+  if (!error || typeof error !== 'object') return { providerMessage: 'Provider returned an error without structured details.' };
+  const details = error as { code?: unknown; type?: unknown; message?: unknown };
+  const message = typeof details.message === 'string' ? details.message : '';
+  let providerMessage = 'Provider error message omitted (unclassified).';
+  if (/reasoning is mandatory for this endpoint and cannot be disabled/i.test(message)) {
+    providerMessage = 'Reasoning is mandatory for this endpoint and cannot be disabled.';
+  } else if (/free-models-per-day/i.test(message)) {
+    providerMessage = 'Rate limit exceeded: free-models-per-day.';
+  } else if (/rate limit/i.test(message)) {
+    providerMessage = 'Provider rate limit exceeded.';
+  } else if (/provider returned error/i.test(message)) {
+    providerMessage = 'Provider returned error.';
+  } else if (/invalid.{0,30}(request|parameter)|(?:request|parameter).{0,30}invalid/i.test(message)) {
+    providerMessage = 'Provider rejected the request as invalid.';
+  }
+  return {
+    ...(typeof details.code === 'string' || typeof details.code === 'number' ? { providerErrorCode: details.code } : {}),
+    ...(typeof details.type === 'string' ? { providerErrorType: details.type.slice(0, 80) } : {}),
+    providerMessage,
+  };
+}
+
+async function readUpstreamError(response: Response): Promise<{ providerErrorCode?: string | number; providerErrorType?: string; providerMessage: string }> {
+  try {
+    const reader = response.body?.getReader();
+    if (!reader) return { providerMessage: 'Provider returned an empty error response.' };
+    const chunks: Uint8Array[] = [];
+    let byteLength = 0;
+    while (byteLength <= 4096) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      byteLength += value.byteLength;
+    }
+    if (byteLength > 4096) {
+      await reader.cancel().catch(() => {});
+      return { providerMessage: 'Provider error response exceeded the diagnostic size limit.' };
+    }
+    const bytes = new Uint8Array(byteLength);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    return describeUpstreamError(JSON.parse(new TextDecoder().decode(bytes)));
+  } catch {
+    return { providerMessage: 'Provider returned an unreadable error response.' };
+  }
+}
+
 Deno.serve(async (request) => {
   const origin = request.headers.get('Origin') ?? '';
   if (!allowedOrigins.has(origin)) {
@@ -282,7 +335,6 @@ Deno.serve(async (request) => {
     const upstreamBody = JSON.stringify({
       model: 'openrouter/free',
       max_tokens: 220,
-      reasoning_effort: 'none',
       stream: true,
       messages: [
         {
@@ -306,18 +358,15 @@ Deno.serve(async (request) => {
       body: upstreamBody,
       signal: AbortSignal.timeout(30000),
     });
-    let upstream = await requestUpstream();
-    if (upstream.status === 400) {
-      console.warn('OpenRouter rejected the first free-model request; retrying once', { status: upstream.status });
-      await upstream.body?.cancel().catch(() => {});
-      upstream = await requestUpstream();
-    }
+    const upstream = await requestUpstream();
 
     if (!upstream.ok) {
+      const providerError = await readUpstreamError(upstream);
       console.error('OpenRouter returned an unsuccessful response', {
         status: upstream.status,
         requestId: upstream.headers.get('x-request-id'),
         retryAfter: upstream.headers.get('retry-after'),
+        ...providerError,
       });
       const isRequestRejected = upstream.status >= 400 && upstream.status < 500 && upstream.status !== 429;
       const code = upstream.status === 429 ? 'UPSTREAM_RATE_LIMITED' : isRequestRejected ? 'UPSTREAM_REQUEST_REJECTED' : 'UPSTREAM_UNAVAILABLE';
