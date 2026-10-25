@@ -1,20 +1,21 @@
-Hyperspace by HTML5 UP
-html5up.net | @ajlkn
-Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+Chirag Shetty — Portfolio
 
-Credits:
+A responsive, static portfolio exploring production AI, computer vision,
+generative AI platforms, open-source work, and technical writing.
 
-	Theme:
-		AJ
-		aj@lkn.io | @ajlkn
+Run locally
 
-	Demo Images:
-		Unsplash (unsplash.com)
+From this directory, start any static file server, for example:
 
-	Icons:
-		Font Awesome (fontawesome.io)
+  python3 -m http.server 8000
 
-	Other:
-		jQuery (jquery.com)
-		Scrollex (github.com/ajlkn/jquery.scrollex)
-		Responsive Tools (github.com/ajlkn/responsive-tools)
+Then open http://localhost:8000.
+
+The site uses plain HTML, CSS, and JavaScript. It has no build step or runtime
+dependencies. Project details use native disclosure elements; project filters,
+toolkit tabs, mobile navigation, and reading progress are in
+assets/js/portfolio.js.
+
+The repository retains the original HTML5 UP Hyperspace theme assets and its
+license for attribution. The current portfolio page uses its own styles and
+scripts in assets/css/portfolio.css and assets/js/portfolio.js.

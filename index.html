@@ -1,304 +1,131 @@
-<!DOCTYPE HTML>
-<!--
-	Hyperspace by HTML5 UP
-	html5up.net | @ajlkn
-	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
--->
+<!doctype html>
 <html lang="en">
-
 <head>
-	<title>Chirag Shetty</title>
-	<link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
-	<link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
-	<link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
-	<link rel="manifest" href="images/site.webmanifest">
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-	<link rel="stylesheet" href="assets/css/main.css" />
-	<noscript>
-		<link rel="stylesheet" href="assets/css/noscript.css" />
-	</noscript>
-	<link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
-	<meta name="description" content="This is a personal portfolio site for Machine Learning Engineer, Chirag Shetty">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2f0e9">
+  <meta name="description" content="Chirag Shetty builds production AI systems, from computer vision at the edge to generative platforms at scale.">
+  <meta property="og:title" content="Chirag Shetty — AI systems, built for the real world">
+  <meta property="og:description" content="Production AI, computer vision, GenAI platforms and the engineering behind them.">
+  <meta property="og:type" content="website">
+  <title>Chirag Shetty — AI systems, built for the real world</title>
+  <link rel="icon" href="images/favicon-32x32.png" type="image/png">
+  <link rel="stylesheet" href="assets/css/portfolio.css">
+  <script src="assets/js/portfolio.js" defer></script>
 </head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="reading-progress" aria-hidden="true"><span></span></div>
+  <header class="topbar">
+    <a class="wordmark" href="#home" aria-label="Chirag Shetty, home">CS<span>.</span></a>
+    <nav aria-label="Main navigation">
+      <a href="#work">Selected work</a>
+      <a href="#path">Experience</a>
+      <a href="#notes">Notes</a>
+      <a class="nav-contact" href="#contact">Let’s talk <span aria-hidden="true">↗</span></a>
+    </nav>
+    <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-nav"><span></span><span></span></button>
+  </header>
+  <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation" hidden>
+    <a href="#work">Selected work</a><a href="#path">Experience</a><a href="#notes">Notes</a><a href="#contact">Contact</a>
+  </nav>
 
-<body class="is-preload">
+  <main id="main">
+    <section class="hero chapter" id="home" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="status-dot"></span> AI / ML ENGINEER · MUMBAI, INDIA</p>
+        <h1 id="hero-title">I build AI systems<br>that <span class="ink-highlight">make it to production.</span></h1>
+        <p class="hero-deck">From generative image pipelines to real-time vision at the edge, I work across the full journey: model, product, platform, and the systems that keep them running.</p>
+        <div class="hero-actions"><a class="button button-dark" href="#work">Explore the work <span aria-hidden="true">↓</span></a><a class="text-link" href="mailto:chirag4798@gmail.com">Get in touch <span aria-hidden="true">↗</span></a></div>
+        <div class="hero-facts" aria-label="Career overview"><div><strong>5+</strong><span>years building AI</span></div><div><strong>225</strong><span>FPS vision inference</span></div><div><strong>50</strong><span>FPS Jetson ALPR</span></div></div>
+      </div>
+      <div class="hero-visual" aria-label="Portrait of Chirag Shetty">
+        <div class="portrait-frame"><picture><source media="(max-width: 620px)" srcset="images/chirag-portrait.png"><img src="images/chirag-passport.jpg" alt="Chirag Shetty" fetchpriority="high" decoding="async"></picture></div>
+        <div class="orbit orbit-one" aria-hidden="true"></div><div class="orbit orbit-two" aria-hidden="true"></div>
+        <div class="visual-note"><span class="note-mark">✳</span><span>Ideas are easy.<br><b>Reliable systems are the work.</b></span></div>
+        <span class="hero-index">01 / SYSTEMS THINKING</span>
+      </div>
+      <a class="scroll-cue" href="#thesis"><span></span> SCROLL TO EXPLORE</a>
+    </section>
 
-	<!-- Sidebar -->
-	<section id="sidebar">
-		<div class="inner">
+    <section class="thesis chapter" id="thesis" aria-labelledby="thesis-title">
+      <div class="section-kicker"><span>01</span><span>THE THROUGH-LINE</span></div>
+      <div class="thesis-layout"><h2 id="thesis-title">Useful AI is<br><em>an engineering</em><br>discipline.</h2><div class="thesis-copy"><p class="lede">The interesting part isn’t only the model. It’s making the whole thing useful: the data, the latency, the product surface, the deployment, and what happens when something breaks.</p><p>That’s the thread across my work: shipping computer vision and generative AI into products people use, then making those systems faster, steadier, and easier to operate.</p><a class="inline-link" href="#path">Follow the thread <span aria-hidden="true">↘</span></a></div></div>
+      <div class="system-line" aria-label="The path from model to production"><div class="system-step active"><span>01</span><b>Understand</b><small>the problem</small></div><i aria-hidden="true"></i><div class="system-step"><span>02</span><b>Design</b><small>the system</small></div><i aria-hidden="true"></i><div class="system-step"><span>03</span><b>Ship</b><small>to production</small></div><i aria-hidden="true"></i><div class="system-step"><span>04</span><b>Improve</b><small>with evidence</small></div></div>
+    </section>
 
+    <section class="work chapter" id="work" aria-labelledby="work-title">
+      <div class="section-kicker"><span>02</span><span>SELECTED WORK · 2020—NOW</span></div>
+      <div class="section-heading"><div><p class="eyebrow">A FEW SYSTEMS I’VE HELPED BUILD</p><h2 id="work-title">Work, in context.</h2></div><p>Choose a lens. Open a project to see the problem, the engineering, and the proof.</p></div>
+      <div class="filter-row" role="group" aria-label="Filter projects by area">
+        <button class="filter-chip selected" type="button" data-filter="all" aria-pressed="true">All work <span>04</span></button>
+        <button class="filter-chip" type="button" data-filter="genai" aria-pressed="false">GenAI</button>
+        <button class="filter-chip" type="button" data-filter="vision" aria-pressed="false">Computer vision</button>
+        <button class="filter-chip" type="button" data-filter="platform" aria-pressed="false">Platforms &amp; edge</button>
+      </div>
+      <div class="project-list">
+        <article class="project-card featured" data-category="genai platform">
+          <div class="project-art art-fashion"><img src="images/fashion.jpg" alt="Fashion discovery artwork from the Shop the Look project" loading="lazy"><span class="art-label">01 / PRODUCT + AGENTS</span><span class="art-stamp">IMPETUS<br>DESIGN</span></div>
+          <div class="project-body"><div class="project-meta"><span>JIO FYND · 2023—NOW</span><span>GENAI / MULTI-AGENT / PLATFORM</span></div><h3>Fashion design,<br>with a bigger canvas.</h3><p>Building an AI-powered design platform that helps teams explore trends, plan collections, and move from a brief to a range of generated styles.</p><details class="case-details"><summary>Explore the system <span aria-hidden="true">＋</span></summary><div class="case-content"><p><b>The challenge</b> Make a complex design workflow feel like one coherent creative tool, with structured inputs and outputs teams can work from.</p><p><b>The system</b> I defined platform architecture and built a multi-agent workflow to gather requirements, plan range architectures, and generate styles. The backend brings together LangChain, multimodal LLMs, Flux, Stable Diffusion, and vLLM services.</p><p><b>My focus</b> Connect AI planning and generation into a modular product workflow, while keeping the underlying steps inspectable and useful to designers.</p></div></details><div class="tag-row"><span>Multi-agent workflows</span><span>Multimodal LLMs</span><span>Fashion tech</span></div></div>
+        </article>
+        <article class="project-card" data-category="genai platform">
+          <div class="project-art art-cdn"><div class="image-pipeline" aria-hidden="true"><span>INPUT</span><i></i><span class="pipeline-core">AI<br>PIPELINE</span><i></i><span>DELIVERY</span></div><span class="art-label">02 / GENAI AT SCALE</span><span class="art-metric">+5%<small>product engagement</small></span></div>
+          <div class="project-body"><div class="project-meta"><span>JIO FYND · 2023—NOW</span><span>GENAI / INFERENCE / RELIABILITY</span></div><h3>A CDN that can<br>think in images.</h3><p>Architected and led an AI-powered image delivery platform for Ajio, JioMart, and Tira, bringing real-time transformation into the shopping experience.</p><details class="case-details"><summary>Explore the system <span aria-hidden="true">＋</span></summary><div class="case-content"><p><b>The pipeline</b> Automated product tagging, Stable Diffusion background generation, U2Net foreground extraction, and SRGAN upscaling run as coordinated image services.</p><p><b>The engineering</b> Python and FastAPI APIs orchestrate processing and platform integrations. I applied post-training quantization to lower latency and GPU memory use, and added token-usage tracking and efficiency improvements to reduce operating costs.</p><p><b>The outcome</b> The platform contributed to a 5% increase in product engagement. I also owned production reliability work, including monitoring, incident response, and database recovery.</p></div></details><div class="tag-row"><span>Stable Diffusion</span><span>FastAPI</span><span>Model optimization</span></div></div>
+        </article>
+        <article class="project-card" data-category="vision platform">
+          <div class="project-art art-vision"><div class="vision-grid" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><span class="art-label">03 / REAL-TIME VISION</span><span class="art-metric">225<small>FPS · NVIDIA T4</small></span></div>
+          <div class="project-body"><div class="project-meta"><span>ADAGRAD AI · 2021—2023</span><span>COMPUTER VISION / C++ / TENSORRT</span></div><h3>Video analytics,<br>at real-time speed.</h3><p>Built production video analytics for retail and access control: people counting, re-identification, semantic matching, and license-plate recognition.</p><details class="case-details"><summary>Explore the system <span aria-hidden="true">＋</span></summary><div class="case-content"><p><b>Throughput</b> C++ inference pipelines using YOLO, PyTorch, and TensorRT reached 225 FPS on NVIDIA T4 GPUs for high-volume video analytics.</p><p><b>At the edge</b> An ALPR system on NVIDIA Jetson TX2 NX sustained 50 FPS at 90–95% accuracy and connected to backend services for traffic-enforcement workflows.</p><p><b>Keeping it efficient</b> I used PTQ and QAT to compress detection models to INT8 while preserving accuracy across distributed deployments.</p></div></details><div class="tag-row"><span>YOLO</span><span>NVIDIA DeepStream</span><span>TensorRT</span></div></div>
+        </article>
+        <article class="project-card" data-category="vision platform">
+          <div class="project-art art-edge"><div class="edge-chip" aria-hidden="true"><span>EDGE</span><b>01</b><small>MODEL<br>→ DEVICE</small></div><span class="art-label">04 / EDGE DEPLOYMENT</span><span class="edge-caption">SMALLER MODELS.<br>REAL-WORLD CONSTRAINTS.</span></div>
+          <div class="project-body"><div class="project-meta"><span>OPTISOL · 2020—2021</span><span>VISION / EDGE / OPTIMIZATION</span></div><h3>Make the model<br>fit the world.</h3><p>Developed computer-vision systems for automated power-pole inspection and defect detection, then brought inference cost down through model optimization.</p><details class="case-details"><summary>Explore the system <span aria-hidden="true">＋</span></summary><div class="case-content"><p><b>From model to workflow</b> TensorFlow and OpenCV powered automated inspection, with FastAPI and Flask services connecting models to practical ML workflows.</p><p><b>Optimization</b> Quantization-aware training and model sparsity reduced latency by 50%.</p><p><b>Learning in production</b> This work laid the groundwork for a continuing focus on edge deployment: measuring tradeoffs in latency, memory, and accuracy against the device that has to run the model.</p></div></details><div class="tag-row"><span>TensorFlow</span><span>OpenCV</span><span>QAT</span></div></div>
+        </article>
+      </div>
+    </section>
 
-			<nav>
-				<ul>
-					<li style="font-size:30px" ;><a href="#intro">About Me</a></li>
-					<li style="font-size:30px" ;><a href="#blogs">Blogs</a></li>
-					<li style="font-size:30px" ;><a href="#one">Experience</a></li>
-					<li style="font-size:30px" ;><a href="#two">Skills</a></li>
-					<li style="font-size:30px" ;><a href="#three">Projects</a></li>
-					<li style="font-size:30px" ;><a href="#four">Contact</a></li>
-				</ul>
-			</nav>
-		</div>
-	</section>
+    <section class="path chapter" id="path" aria-labelledby="path-title">
+      <div class="section-kicker"><span>03</span><span>THE PATH HERE</span></div><div class="section-heading"><div><p class="eyebrow">A CAREER IN BUILDING THINGS THAT RUN</p><h2 id="path-title">Different problems.<br>Same instinct.</h2></div><p>Learn the constraints. Make the system work. Leave it better than I found it.</p></div>
+      <div class="timeline">
+        <article class="timeline-item"><span class="timeline-year">2023—NOW</span><span class="timeline-node"></span><div><p class="timeline-role">SDE-2 · ML ENGINEER</p><h3>Jio Fynd</h3><p>GenAI image delivery and fashion design platforms. Backend architecture, multimodal workflows, model-serving systems, and production reliability.</p><div class="tag-row"><span>GenAI</span><span>AI platforms</span><span>FastAPI</span></div></div><span class="timeline-marker">01</span></article>
+        <article class="timeline-item"><span class="timeline-year">2021—2023</span><span class="timeline-node"></span><div><p class="timeline-role">MACHINE LEARNING ENGINEER</p><h3>Adagrad AI</h3><p>Real-time video analytics, retail intelligence, and edge ALPR. C++ inference, TensorRT optimization, and distributed deployments.</p><div class="tag-row"><span>Computer vision</span><span>TensorRT</span><span>Edge AI</span></div></div><span class="timeline-marker">02</span></article>
+        <article class="timeline-item"><span class="timeline-year">2020—2021</span><span class="timeline-node"></span><div><p class="timeline-role">MACHINE LEARNING ENGINEER</p><h3>Optisol Business Solutions</h3><p>Computer vision for infrastructure inspection, defect detection, and faster inference pipelines.</p><div class="tag-row"><span>OpenCV</span><span>TensorFlow</span><span>Optimization</span></div></div><span class="timeline-marker">03</span></article>
+        <article class="timeline-item"><span class="timeline-year">2016—2020</span><span class="timeline-node"></span><div><p class="timeline-role">B.TECH · MECHANICAL ENGINEERING</p><h3>Vellore Institute of Technology</h3><p>An engineering foundation that still shapes how I approach AI: understand the system around the model.</p></div><span class="timeline-marker">04</span></article>
+      </div>
+    </section>
 
-	<!-- Wrapper -->
-	<div id="wrapper">
+    <section class="toolkit chapter" id="toolkit" aria-labelledby="toolkit-title">
+      <div class="section-kicker"><span>04</span><span>HOW I WORK</span></div><div class="toolkit-heading"><h2 id="toolkit-title">I like the seams<br>between disciplines.</h2><p>Tap a layer to see where I spend my time.</p></div>
+      <div class="toolkit-explorer" data-explorer>
+        <div class="toolkit-tabs" role="tablist" aria-label="Engineering disciplines"><button role="tab" id="tab-models" aria-controls="panel-models" aria-selected="true" tabindex="0" data-layer="models">Models</button><button role="tab" id="tab-systems" aria-controls="panel-systems" aria-selected="false" tabindex="-1" data-layer="systems">Systems</button><button role="tab" id="tab-production" aria-controls="panel-production" aria-selected="false" tabindex="-1" data-layer="production">Production</button></div>
+        <div class="toolkit-panel" id="panel-models" role="tabpanel" aria-labelledby="tab-models" tabindex="0"><span class="panel-index">01</span><div><p class="eyebrow">MODELS &amp; INTELLIGENCE</p><h3>Build the capability.</h3><p>Computer vision, multimodal models, generative image systems, and the model work that turns an idea into something a product can use.</p></div><div class="toolkit-tags"><span>PyTorch</span><span>TensorFlow</span><span>YOLO</span><span>Stable Diffusion</span><span>Flux</span><span>Multimodal LLMs</span><span>LangChain</span></div></div>
+        <div class="toolkit-panel" id="panel-systems" role="tabpanel" aria-labelledby="tab-systems" tabindex="0" hidden><span class="panel-index">02</span><div><p class="eyebrow">SERVING &amp; PLATFORM</p><h3>Make the parts work together.</h3><p>APIs, orchestration, model serving, and service boundaries that let AI move reliably through a real product.</p></div><div class="toolkit-tags"><span>Python</span><span>C++</span><span>FastAPI</span><span>vLLM</span><span>ONNX Runtime</span><span>PostgreSQL</span><span>GCP</span></div></div>
+        <div class="toolkit-panel" id="panel-production" role="tabpanel" aria-labelledby="tab-production" tabindex="0" hidden><span class="panel-index">03</span><div><p class="eyebrow">INFERENCE &amp; OPERATIONS</p><h3>Keep it fast. Keep it running.</h3><p>Optimization and operational ownership: fitting models to hardware, seeing what the system is doing, and responding when production gets messy.</p></div><div class="toolkit-tags"><span>TensorRT</span><span>DeepStream</span><span>PTQ / QAT</span><span>INT8</span><span>Docker</span><span>Kubernetes</span><span>Monitoring</span></div></div>
+      </div>
+    </section>
 
-		<!-- Intro -->
-		<section id="intro" class="wrapper style1 fullscreen fade-up">
-			<div class="inner" align="center">
-				<h1>Hey! I'm Chirag Shetty</h1>
-				<p align="center">I'm an engineer with passion for data driven problem solving. Looking to collaborate
-					with people from diverse backgrounds and expertise to learn, grow and provide value to society.</p>
-				<ul class="actions special">
-					<li><a href="https://drive.google.com/file/d/1H4Y0LAw7m6Hj2vBlV7l1CywfuJIFLO1D/view?usp=sharing"
-							class="button large" target="_blank">Check out My Resume</a></li>
-				</ul>
-				<ul class="icons" align="center" style="font-size:50px;">
-					<li><a href="https://github.com/chirag4798/" class="icon brands fa-github" target="_blank"><span
-								class="label">Github</span></a></li>
-					<li><a href="https://www.linkedin.com/in/chirag-shetty-85250913a/"
-							class="icon brands fa-linkedin-in" target="_blank"><span class="label">LinkedIn</span></a>
-					</li>
-					<li><a href="mailto:chirag4798@gmail.com" target="_blank" class="icon fa-envelope"><span
-								class="label">Email</span></a></li>
-				</ul>
-			</div>
-		</section>
+    <section class="archive chapter" id="notes" aria-labelledby="notes-title">
+      <div class="section-kicker"><span>05</span><span>OPEN SOURCE &amp; WRITING</span></div><div class="section-heading"><div><p class="eyebrow">PROJECTS, PROTOTYPES &amp; EXPLANATIONS</p><h2 id="notes-title">The work keeps going.</h2></div><a class="inline-link" href="https://github.com/chirag4798" target="_blank" rel="noreferrer">Browse GitHub <span aria-hidden="true">↗</span></a></div>
+      <div class="archive-subhead"><h3>Code, prototypes, and experiments</h3><span>SELECTED REPOSITORIES</span></div>
+      <div class="archive-grid">
+        <a class="archive-item" href="https://github.com/chirag4798/ByteTrack" target="_blank" rel="noreferrer"><span class="archive-type">MULTI-OBJECT TRACKING · C++</span><h3>ByteTrack → DeepStream</h3><p>Implemented a C++ port and integrated it with NVIDIA DeepStream for GPU-accelerated video analytics. The linked repository is my public ByteTrack fork.</p><span class="archive-arrow">↗</span></a>
+        <a class="archive-item" href="https://github.com/chirag4798/DeepStream101" target="_blank" rel="noreferrer"><span class="archive-type">COMPUTER VISION · NVIDIA</span><h3>DeepStream 101</h3><p>Code and practical notes for getting started with NVIDIA DeepStream and real-time video pipelines.</p><span class="archive-arrow">↗</span></a>
+        <a class="archive-item" href="https://github.com/chirag4798/Shop-The-Look" target="_blank" rel="noreferrer"><span class="archive-type">FASHION AI · RECOMMENDATION</span><h3>Shop the Look</h3><p>A visual product-discovery engine using object detection and image embeddings to find similar catalog items.</p><span class="archive-arrow">↗</span></a>
+        <a class="archive-item" href="https://github.com/chirag4798/Multi-Layered-Perceptron" target="_blank" rel="noreferrer"><span class="archive-type">LEARNING SYSTEMS · FROM SCRATCH</span><h3>Multi-layer perceptron</h3><p>A neural network implemented with vector and matrix operations to explore backpropagation and optimization.</p><span class="archive-arrow">↗</span></a>
+        <a class="archive-item" href="https://github.com/chirag4798/SLAM" target="_blank" rel="noreferrer"><span class="archive-type">ROBOTICS · PYTHON</span><h3>SLAM implementation</h3><p>A hands-on exploration of simultaneous localization and mapping in Python.</p><span class="archive-arrow">↗</span></a>
+        <a class="archive-item" href="https://github.com/chirag4798/Mercedes-Benz-Greener-Manufacturing" target="_blank" rel="noreferrer"><span class="archive-type">DATA SCIENCE · KAGGLE</span><h3>Greener manufacturing</h3><p>Modeling vehicle testing bench time using Daimler manufacturing data.</p><span class="archive-arrow">↗</span></a>
+        <a class="archive-item" href="https://github.com/chirag4798/Clustering-Locations" target="_blank" rel="noreferrer"><span class="archive-type">UNSUPERVISED LEARNING</span><h3>Clustering locations</h3><p>Exploring business locations through locality clustering and data mining.</p><span class="archive-arrow">↗</span></a>
+      </div>
+      <div class="archive-subhead writing-subhead"><h3>Articles &amp; field notes</h3><span>COMPUTER VISION · 2023</span></div>
+      <div class="writing-list">
+        <a href="https://chirag4798.medium.com/nvidia-deepstream-101-a-beginners-guide-to-real-time-computer-vision-afefcb5d7fba" target="_blank" rel="noreferrer"><span>01</span><span><b>NVIDIA DeepStream 101</b><small>A beginner’s guide to real-time computer vision</small></span><span class="writing-arrow">↗</span></a>
+        <a href="https://medium.com/@chirag4798/nvidia-deepstream-101-a-step-by-step-guide-to-creating-your-first-deepstream-application-68148753cf96" target="_blank" rel="noreferrer"><span>02</span><span><b>Build your first DeepStream application</b><small>A step-by-step walkthrough of the video pipeline</small></span><span class="writing-arrow">↗</span></a>
+        <a href="https://chirag4798.medium.com/shop-the-look-8d686bde7de8" target="_blank" rel="noreferrer"><span>03</span><span><b>Shop the Look</b><small>End-to-end fashion recommendations through visual similarity</small></span><span class="writing-arrow">↗</span></a>
+      </div>
+    </section>
 
-		<!-- Intro -->
-		<section id="blogs" class="wrapper style1 fullscreen fade-up">
-			<div class="inner" align="center">
-				<h2>Checkout my Blogs!</h2>
-				<p align="center">Simple and effective tutorials on getting started with your journey in Computer Vision.</p>
-				<ul class="actions special">
-					<li><a href="https://chirag4798.medium.com/nvidia-deepstream-101-a-beginners-guide-to-real-time-computer-vision-afefcb5d7fba"
-							class="button large" target="_blank">Deepstream 101</a></li>
-					<li><a href="https://medium.com/@chirag4798/nvidia-deepstream-101-a-step-by-step-guide-to-creating-your-first-deepstream-application-68148753cf96"
-						class="button large" target="_blank">Building CV Applications</a></li>
-					<li><a href="https://chirag4798.medium.com/shop-the-look-8d686bde7de8"
-							class="button large" target="_blank">Shop The Look</a></li>
-				</ul>
-			</div>
-		</section>
-
-		
-		<!-- One -->
-		<section id="one" class="wrapper style2 spotlights">
-			<section>
-				<a href="https://www.adagrad.ai/" class="image" target="_blank"><img src="images/adagrad.jpg"
-						alt="" data-position="center center" /></a>
-				<div class="content">
-					<div class="inner" align="justify">
-						<h2>Adagrad AI</h2>
-						<p>Machine Learning Engineer, working on cutting edge solutions in the field of
-						   computer vision for real-time video analytics and access-control 
-						   through applications using Person Detection, ReID and Automated License Plate Recognition.</p>
-					</div>
-				</div>
-			</section>
-			<section>
-				<a href="https://www.optisolbusiness.com/" class="image" target="_blank"><img src="images/optsl.jpg"
-						alt="" data-position="center center" /></a>
-				<div class="content">
-					<div class="inner" align="justify">
-						<h2>Optisol</h2>
-						<p>Machine Learning Engineer, developing Computer Vision Projects
-							on domains
-							such instance segmentation and semantic segmentation for visual distance measurement.
-							Productionizing and optimizing pipelines to achieve efficient inference.</p>
-					</div>
-				</div>
-			</section>
-			<section>
-				<a href="http://dataswitch.co/" class="image" target="_blank"><img src="images/ds.jpg" alt=""
-						data-position="top center" /></a>
-				<div class="content">
-					<div class="inner" align="justify">
-						<h2>DataSwitch Inc</h2>
-						<p>Interned and worked on a project focused at providing a
-							natural language
-							interface for databases. Applied NLP concepts in domains such as Entity Extraction and
-							Intent Recognition for converting natural language queries into database queries.</p>
-					</div>
-				</div>
-			</section>
-		</section>
-
-		<section id="two" class="wrapper style1 fade-up">
-			<div class="inner" align="center">
-				<section>
-					<a class="image" target="_blank">
-						<img src="images/python.png" align="left" height=150 width=200 />
-						<p align="center">Python</p>
-					</a>
-					<a class="image" target="_blank">
-						<img src="images/tensorflow.png" alt="" align="left" height=150 width=200px />
-						<p align="center">Tensorflow</p>
-					</a>
-					<a class="image" target="_blank">
-						<img src="images/sklearn.jpg" alt="" align="left" height=150 width=200px />
-						<p align="center">Scikit-Learn</p>
-					</a>
-					<a class="image" target="_blank">
-						<img src="images/numpy.png" alt="" align="left" height=150 width=200px />
-						<p align="center">Numpy</p>
-					</a>
-					<a class="image" target="_blank">
-						<img src="images/pandas.jpg" alt="" align="left" height=150 width=200px />
-						<p align="center">Pandas</p>
-					</a>
-					<a class="image" target="_blank">
-						<img src="images/scipy.png" alt="" align="left" height=150 width=200px />
-						<p align="center">Scipy</p>
-					</a>
-				</section>
-				<section>
-					<a>
-						<p></p>
-					</a>
-				</section>
-				<section>
-					<a>
-						<p></p>
-					</a>
-				</section>
-				<section>
-					<a href="" class="image" target="_blank">
-						<img src="images/pytorch.png" alt="" align="left" height=150px width=200px />
-						<p align="center">Pytorch</p>
-					</a>
-					<a href="" class="image" target="_blank">
-						<img src="images/opencv.png" alt="" align="left" height=150px width=200px />
-						<p align="center">Open-CV</p>
-					</a>
-					<a href="" class="image" target="_blank">
-						<img src="images/flask.png" alt="" align="left" height=150px width=200px />
-						<p align="center">Flask</p>
-					</a>
-					<a href="" class="image" target="_blank">
-						<img src="images/cpp.png" alt="" align="left" height=150px width=200px />
-						<p align="center">C++</p>
-					</a>
-					<a href="" class="image" target="_blank">
-						<img src="images/rasa.png" alt="" align="left" height=150px width=200px />
-						<p align="center">RASA</p>
-					</a>
-					<a href="" class="image" target="_blank">
-						<img src="images/git.png" alt="" align="left" height=150px width=200px />
-						<p align="center">Git</p>
-					</a>
-				</section>
-			</div>
-		</section>
-
-		<!-- Three -->
-		<section id="three" class="wrapper style1 fade-up">
-			<div class="inner">
-				<div class="features">
-					<section>
-						<a href="https://chirag4798.medium.com/shop-the-look-8d686bde7de8" class="image fit" target="_blank"><img
-								src="images/fashion.jpg" width=500 height=375 alt="" /></a>
-						<h3 align="center">SHOP THE LOOK</h3>
-						<p align="justify">A content based fashion products recommendation Engine which combines various
-							aspects of Computer
-							vision to perform object detection and image embedding generation. The image embeddings are
-							used to
-							recommend similar products from a catalog of fashion items. Inspired by a research article
-							from Myntra.</p>
-						<ul class="actions special">
-							<li><a href="https://chirag4798.medium.com/shop-the-look-8d686bde7de8" class="button"
-									target="_blank">check it
-									out</a></li>
-						</ul>
-					</section>
-					<section>
-						<a href="https://chirag4798.github.io/Mercedes-Benz-Greener-Manufacturing/" target="_blank"
-							class="image fit"><img src="images/mercedes.jpg" width=500 height=375 alt=""
-								target="_blank" /></a>
-						<h3 align="center">MERCEDES BENZ GREENER MANUFACTURING</h3>
-						<p align="justify">A dataset has been prepared by the engineers in Daimler to estimate and
-							reduce the bench time for testing
-							automobiles, it contains combinations of car features, configurations and different testing
-							methods applied with their respective time required for testing. Goal is to model the time
-							taken by each interaction.</p>
-						<ul class="actions special">
-							<li><a href="https://chirag4798.github.io/Mercedes-Benz-Greener-Manufacturing/"
-									class="button" target="_blank">check it out</a></li>
-						</ul>
-					</section>
-					<section>
-						<a href="https://chirag4798.github.io/Clustering-Locations/" class="image fit"
-							target="_blank"><img src="images/cluster.jpg" width=500 height=375 alt="" /></a>
-						<h3 align="center">CLUSTERING LOCATIONS</h3>
-						<p align="justify">An in-depth analysis aimed at suggesting suitable locations to set up a
-							restaurant as well as
-							the
-							type of
-							restaurant based on the characteristics of the location. The suggested locations are
-							selected,
-							keeping in mind the possibilities for future expansion.</p>
-						<ul class="actions special">
-							<li><a href="https://chirag4798.github.io/Clustering-Locations/" class="button"
-									target="_blank">check it
-									out</a></li>
-						</ul>
-					</section>
-					<section>
-						<a href="https://github.com/chirag4798/Multi-Layered-Perceptron" class="image fit"
-							target="_blank"><img src="images/network.jpg" width=500 height=375 alt="" /></a>
-						<h3 align="center">NEURAL NETWORKS FROM SCRATCH</h3>
-						<p align="justify">Neural Network / Multi Layered Perceptron implemeted from scratch using just
-							vector and
-							matrix computations. The goal of the projects was to understand the intricacies of Deep
-							Neural Network training, gradient flow during backpropagation of loss and experimenting with
-							various
-							optimization methods for faster convergence.</p>
-						<ul class="actions special">
-							<li><a href="https://github.com/chirag4798/Multi-Layered-Perceptron" class="button"
-									target="_blank">check it
-									out</a></li>
-						</ul>
-					</section>
-				</div>
-			</div>
-		</section>
-
-		<!-- Four -->
-		<section id="four" class="wrapper style1 fade-up">
-			<div class="inner">
-				<section>
-					<ul class="contact" align="center">
-						<li>
-							<h3>REACH OUT TO ME</h3>
-							<ul class="icons" style="font-size: 60px;">
-								<li><a href="https://github.com/chirag4798/" class="icon brands fa-github"
-										target="_blank"><span class="label">Github</span></a></li>
-								<li><a href="https://www.linkedin.com/in/chirag-shetty-85250913a/" target="_blank"
-										class="icon brands fa-linkedin-in"><span class="label">LinkedIn</span></a></li>
-								<li><a href="mailto:chirag4798@gmail.com" target="_blank" class="icon fa-envelope"><span
-											class="label">Email</span></a></li>
-							</ul>
-						</li>
-					</ul>
-				</section>
-			</div>
-		</section>
-
-	</div>
-
-
-
-	<!-- Scripts -->
-	<script src="assets/js/jquery.min.js"></script>
-	<script src="assets/js/jquery.scrollex.min.js"></script>
-	<script src="assets/js/jquery.scrolly.min.js"></script>
-	<script src="assets/js/browser.min.js"></script>
-	<script src="assets/js/breakpoints.min.js"></script>
-	<script src="assets/js/util.js"></script>
-	<script src="assets/js/main.js"></script>
-
+    <section class="contact chapter" id="contact" aria-labelledby="contact-title">
+      <div class="section-kicker"><span>06</span><span>THE NEXT SYSTEM</span></div><div class="contact-layout"><div><p class="eyebrow">OPEN TO GOOD PROBLEMS</p><h2 id="contact-title">Let’s build<br><em>something useful.</em></h2></div><div class="contact-side"><p>If you’re working on production AI, GenAI platforms, or real-time computer vision, I’d like to hear what you’re building.</p><a class="button button-light" href="mailto:chirag4798@gmail.com">Email Chirag <span aria-hidden="true">↗</span></a><div class="social-links"><a href="https://www.linkedin.com/in/chirag--shetty/" target="_blank" rel="noreferrer">LinkedIn <span aria-hidden="true">↗</span></a><a href="https://github.com/chirag4798" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a><a href="https://chirag4798.medium.com/" target="_blank" rel="noreferrer">Medium <span aria-hidden="true">↗</span></a></div></div></div><footer><a class="wordmark" href="#home">CS<span>.</span></a><p>Designed around the work. Built to keep exploring.</p><span>© <span id="year">2026</span> Chirag Shetty</span></footer>
+    </section>
+  </main>
 </body>
-
 </html>
