@@ -109,6 +109,7 @@ Built FastAPI and Flask services for ML pipelines, plus a Q-learning system for 
 Download my current AI/ML and GenAI resume below. It includes my experience, technical strengths, selected open-source work, and articles.`;
  function render(md){let raw=md.replace(/^### (.*)$/gm,'<h3>$1</h3>').replace(/^## (.*)$/gm,'<h2>$1</h2>').replace(/^# (.*)$/gm,'<h1>$1</h1>').replace(/^<div class="meta">(.*?)<\/div>$/gm,'<div class="meta">$1</div>').replace(/^> (.*)$/gm,'<blockquote>$1</blockquote>').replace(/^- (.*)$/gm,'<li>$1</li>');raw=raw.split(/\n\n+/).map(block=>{if(/^<(h[1-3]|div|blockquote|li|img)/.test(block))return block;if(block.startsWith('<li>'))return `<ul>${block}</ul>`;return `<p>${block}</p>`}).join('\n');return raw.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noreferrer">$1 ↗</a>')}
  const tree=[...document.querySelectorAll('.tree-file')],response=document.getElementById('response'),welcome=document.querySelector('.welcome');
+ let chatGeneration=0;
  const resumePath='assets/files/Chirag_Shetty_Resume.pdf';
  const approvedExternalLinks=[...new Set(Object.values(files).flatMap(content=>[...content.matchAll(/\]\((https:\/\/[^)\s]+)\)/g)].map(match=>match[1])))];
  function renderResourceLinks(sectionNames){
@@ -119,12 +120,15 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
  }
  const resumeCard=()=>`<a class="attachment-card" href="${resumePath}" download="Chirag_Shetty_Resume.pdf"><span class="pdf-badge">PDF</span><span class="attachment-name"><strong>Chirag_Shetty_Resume.pdf</strong><small>AI / ML Engineer · 2 pages</small></span><span class="download-icon" aria-hidden="true">↓</span></a>`;
  const sectionPrompts={'README.md':'Give me an overview','about.md':'Tell me about Chirag','jio-fynd.md':'Tell me about Chirag’s work at Jio Fynd','adagrad-ai.md':'Tell me about Chirag’s work at Adagrad AI','optisol.md':'Tell me about Chirag’s work at Optisol Business Solutions','projects.md':'Show me Chirag’s open-source work','articles.md':'Show me Chirag’s articles','experience.md':'Give me Chirag’s experience overview','toolkit.md':'What tools does Chirag work with?','resume.md':'Can you share Chirag’s resume?','contact.md':'How can I contact Chirag?'};
- function showFile(name){if(!files[name])return;tree.forEach(b=>b.classList.toggle('selected',b.dataset.file===name));welcome.hidden=true;response.hidden=false;const body=render(files[name])+(name==='resume.md'?resumeCard():'');response.innerHTML=`<div class="user-message">${sectionPrompts[name]||'Give me an overview'}</div><div class="assistant-message"><div class="assistant-avatar">✳</div><div class="assistant-content">${body}</div></div>`;if(innerWidth<=720)document.getElementById('explorer').classList.add('closed');document.querySelector('.chat-scroll').scrollTop=document.querySelector('.chat-scroll').scrollHeight}
+ function showFile(name){if(!files[name])return;tree.forEach(b=>b.classList.toggle('selected',b.dataset.file===name));welcome.hidden=true;response.hidden=false;const body=render(files[name])+(name==='resume.md'?resumeCard():'');response.innerHTML=`<div class="user-message">${sectionPrompts[name]||'Give me an overview'}</div><div class="assistant-message"><div class="assistant-avatar">✳</div><div class="assistant-content">${body}</div></div>`;if(innerWidth<=720)setSidebarOpen(false);document.querySelector('.chat-scroll').scrollTop=document.querySelector('.chat-scroll').scrollHeight}
  tree.forEach(button=>button.addEventListener('click',()=>showFile(button.dataset.file)));
- document.querySelector('.side-actions button').addEventListener('click',()=>{response.hidden=true;response.replaceChildren();welcome.hidden=false;tree.forEach(button=>button.classList.toggle('selected',button.dataset.file==='README.md'));document.getElementById('chatInput').value='';document.getElementById('chatInput').focus()});
- document.querySelectorAll('.side-actions button')[1].addEventListener('click',()=>{const q=prompt('Search portfolio sections');if(!q)return;const match=tree.find(button=>button.textContent.toLowerCase().includes(q.toLowerCase()));if(match)showFile(match.dataset.file)});
+ document.getElementById('newChatButton').addEventListener('click',()=>{chatGeneration++;response.hidden=true;response.replaceChildren();welcome.hidden=true;tree.forEach(button=>button.classList.remove('selected'));const input=document.getElementById('chatInput');input.value='';input.disabled=false;document.getElementById('sendButton').disabled=false;input.focus();if(innerWidth<=720)setSidebarOpen(false)});
+ document.getElementById('searchButton').addEventListener('click',()=>{const q=prompt('Search portfolio sections');if(!q)return;const match=tree.find(button=>button.textContent.toLowerCase().includes(q.toLowerCase()));if(match)showFile(match.dataset.file)});
  document.querySelectorAll('.suggestions button').forEach(button=>button.addEventListener('click',()=>showFile(button.dataset.file)));
- const explorer=document.getElementById('explorer');document.getElementById('explorerToggle').addEventListener('click',()=>explorer.classList.toggle('closed'));
+ const explorer=document.getElementById('explorer'),explorerToggle=document.getElementById('explorerToggle'),sidebarCollapseToggle=document.getElementById('sidebarCollapseToggle');
+ function setSidebarOpen(isOpen){explorer.classList.toggle('closed',!isOpen);for(const button of [explorerToggle,sidebarCollapseToggle]){button.setAttribute('aria-expanded',String(isOpen));button.setAttribute('aria-label',isOpen?'Collapse sidebar':'Open sidebar');button.textContent=isOpen?'◧':'☰'}}
+ explorerToggle.addEventListener('click',()=>setSidebarOpen(explorer.classList.contains('closed')));
+ sidebarCollapseToggle.addEventListener('click',()=>setSidebarOpen(false));
  const topics=[
   {key:'jio-fynd.md',aliases:['jio fynd','fynd','impetus','ajio','jiomart','tira','fashion design','image delivery','image transformation','generative image','stable diffusion','flux'],keywords:['langchain','multimodal','vllm','u2net','srgan','quantization','engagement','agent','collection','design']},
   {key:'adagrad-ai.md',aliases:['adagrad','people analytics','person counting','person re identification','re identification','license plate','alpr','jetson','deepstream','t4 gpu','traffic enforcement'],keywords:['yolo','tensorrt','225 fps','50 fps','accuracy','retail','access control','video analytics']},
@@ -155,6 +159,7 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
  }
  async function send(){
   const input=document.getElementById('chatInput'),sendButton=document.getElementById('sendButton'),question=input.value.trim();if(!question||sendButton.disabled)return;
+  const generation=chatGeneration;
   welcome.hidden=true;response.hidden=false;
   const safeQuestion=question.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const resumeRequest=/\b(resume|cv|curriculum vitae)\b/i.test(question);
@@ -162,7 +167,7 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
   const pending=document.createElement('div');pending.className='assistant-message';pending.innerHTML='<div class="assistant-avatar">✳</div><div class="assistant-content ai-thinking">Thinking…</div>';response.append(pending);
   input.value='';input.disabled=true;sendButton.disabled=true;
   const pendingContent=pending.querySelector('.assistant-content');
-  const streamer=window.PortfolioAI.createTextStreamer(chunk=>{pendingContent.classList.remove('ai-thinking');pendingContent.textContent+=chunk});
+  const streamer=window.PortfolioAI.createTextStreamer(chunk=>{if(generation!==chatGeneration)return;pendingContent.classList.remove('ai-thinking');pendingContent.textContent+=chunk});
   let resourceFiles=[];
   try{
    let answer;
@@ -173,6 +178,9 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
     if(!matches.length&&asksAboutChirag)matches=['about.md','experience.md','toolkit.md'].map(key=>({key}));
     if(!matches.length){
      answer='<p>I’m Chirag’s portfolio assistant. I can help with his experience, projects, open-source work, articles, skills, contact details, or resume.</p>';
+    }else if(matches.length===1&&matches[0].key==='contact.md'){
+     setAiStatus('Portfolio · direct answer');
+     answer=`<p>Here are Chirag’s contact details:</p>${render(files['contact.md'])}`;
     }else{
      const relevantFiles=matches.map(topic=>topic.key);
      resourceFiles=relevantFiles;
@@ -185,10 +193,10 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
      else answer=window.PortfolioAI.renderAnswer(window.PortfolioAI.buildFallbackAnswer(relevantFiles),Object.keys(files),approvedExternalLinks)+renderResourceLinks(resourceFiles);
     }
    }
+   if(generation!==chatGeneration)return;
    pending.remove();response.insertAdjacentHTML('beforeend',`<div class="assistant-message"><div class="assistant-avatar">✳</div><div class="assistant-content">${answer}</div></div>`);
   }finally{
-   pending.remove();input.disabled=false;sendButton.disabled=false;
-   document.querySelector('.chat-scroll').scrollTop=document.querySelector('.chat-scroll').scrollHeight;
+   pending.remove();if(generation===chatGeneration){input.disabled=false;sendButton.disabled=false;document.querySelector('.chat-scroll').scrollTop=document.querySelector('.chat-scroll').scrollHeight}
   }
  }
 
@@ -254,6 +262,6 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
   if(link&&files[link.dataset.file]){event.preventDefault();showFile(link.dataset.file)}
  });
  document.getElementById('sendButton').addEventListener('click',send);document.getElementById('chatInput').addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}});
- if(innerWidth<=720)document.getElementById('explorer').classList.add('closed');window.addEventListener('resize',()=>{if(innerWidth>720)document.getElementById('explorer').classList.remove('closed')});
+ let wasMobile=innerWidth<=720;if(wasMobile)setSidebarOpen(false);window.addEventListener('resize',()=>{const isMobile=innerWidth<=720;if(isMobile!==wasMobile){setSidebarOpen(!isMobile);wasMobile=isMobile}});
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;setTimeout(()=>{document.body.classList.add('ready');document.body.classList.remove('booting')},reduced?80:950);
 })();
