@@ -111,6 +111,12 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
  const tree=[...document.querySelectorAll('.tree-file')],response=document.getElementById('response'),welcome=document.querySelector('.welcome');
  const resumePath='assets/files/Chirag_Shetty_Resume.pdf';
  const approvedExternalLinks=[...new Set(Object.values(files).flatMap(content=>[...content.matchAll(/\]\((https:\/\/[^)\s]+)\)/g)].map(match=>match[1])))];
+ function renderResourceLinks(sectionNames){
+  const relevant=['projects.md','articles.md'].filter(name=>sectionNames.includes(name));
+  if(!relevant.length)return '';
+  const links=relevant.flatMap(name=>[...files[name].matchAll(/^- \[([^\]]+)\]\((https:\/\/[^)\s]+)\)/gm)].map(([,label,url])=>`- [${label}](${url})`));
+  return links.length?`<div class="portfolio-resource-links"><p><strong>Explore the links</strong></p>${window.PortfolioAI.renderAnswer(links.join('\n'),Object.keys(files),approvedExternalLinks)}</div>`:'';
+ }
  const resumeCard=()=>`<a class="attachment-card" href="${resumePath}" download="Chirag_Shetty_Resume.pdf"><span class="pdf-badge">PDF</span><span class="attachment-name"><strong>Chirag_Shetty_Resume.pdf</strong><small>AI / ML Engineer · 2 pages</small></span><span class="download-icon" aria-hidden="true">↓</span></a>`;
  const sectionPrompts={'README.md':'Give me an overview','about.md':'Tell me about Chirag','jio-fynd.md':'Tell me about Chirag’s work at Jio Fynd','adagrad-ai.md':'Tell me about Chirag’s work at Adagrad AI','optisol.md':'Tell me about Chirag’s work at Optisol Business Solutions','projects.md':'Show me Chirag’s open-source work','articles.md':'Show me Chirag’s articles','experience.md':'Give me Chirag’s experience overview','toolkit.md':'What tools does Chirag work with?','resume.md':'Can you share Chirag’s resume?','contact.md':'How can I contact Chirag?'};
  function showFile(name){if(!files[name])return;tree.forEach(b=>b.classList.toggle('selected',b.dataset.file===name));welcome.hidden=true;response.hidden=false;const body=render(files[name])+(name==='resume.md'?resumeCard():'');response.innerHTML=`<div class="user-message">${sectionPrompts[name]||'Give me an overview'}</div><div class="assistant-message"><div class="assistant-avatar">✳</div><div class="assistant-content">${body}</div></div>`;if(innerWidth<=720)document.getElementById('explorer').classList.add('closed');document.querySelector('.chat-scroll').scrollTop=document.querySelector('.chat-scroll').scrollHeight}
@@ -157,6 +163,7 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
   input.value='';input.disabled=true;sendButton.disabled=true;
   const pendingContent=pending.querySelector('.assistant-content');
   const streamer=window.PortfolioAI.createTextStreamer(chunk=>{pendingContent.classList.remove('ai-thinking');pendingContent.textContent+=chunk});
+  let resourceFiles=[];
   try{
    let answer;
    if(resumeRequest)answer=`<p>Here’s my current resume. You can download the PDF here:</p>${resumeCard()}`;
@@ -168,13 +175,14 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
      answer='<p>I’m Chirag’s portfolio assistant. I can help with his experience, projects, open-source work, articles, skills, contact details, or resume.</p>';
     }else{
      const relevantFiles=matches.map(topic=>topic.key);
+     resourceFiles=relevantFiles;
      const cloudAnswer=await answerWithCloud(question,relevantFiles,chunk=>streamer.push(chunk));
      if(!cloudAnswer){streamer.reset();pendingContent.textContent=''}
      const nanoAnswer=cloudAnswer||await answerWithNano(question,chunk=>streamer.push(chunk));
      if(nanoAnswer)await streamer.finish();
      else {streamer.reset();pendingContent.textContent=''}
-     if(nanoAnswer)answer=window.PortfolioAI.renderAnswer(nanoAnswer,Object.keys(files),approvedExternalLinks);
-     else answer=window.PortfolioAI.renderAnswer(window.PortfolioAI.buildFallbackAnswer(relevantFiles),Object.keys(files),approvedExternalLinks);
+     if(nanoAnswer)answer=window.PortfolioAI.renderAnswer(nanoAnswer,Object.keys(files),approvedExternalLinks)+renderResourceLinks(resourceFiles);
+     else answer=window.PortfolioAI.renderAnswer(window.PortfolioAI.buildFallbackAnswer(relevantFiles),Object.keys(files),approvedExternalLinks)+renderResourceLinks(resourceFiles);
     }
    }
    pending.remove();response.insertAdjacentHTML('beforeend',`<div class="assistant-message"><div class="assistant-avatar">✳</div><div class="assistant-content">${answer}</div></div>`);
