@@ -199,6 +199,12 @@ test('unavailable cloud chat fallback only links relevant sections and does not 
   assert.match(PortfolioAI.buildFallbackAnswer(['contact.md'], 'rate-limited'), /request limit/i);
 });
 
+test('overview does not show non-clickable virtual file paths', () => {
+  assert.doesNotMatch(portfolioClientSource, /work\/impetus-design\.md/);
+  assert.doesNotMatch(portfolioClientSource, /open-source\/projects\.md/);
+  assert.match(portfolioClientSource, /Fashion Design Platform or Open-source projects from the Explorer/);
+});
+
 test('availability checks request English text input and output', async () => {
   let options;
   const model = {
