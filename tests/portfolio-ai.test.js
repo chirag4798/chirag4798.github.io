@@ -126,6 +126,14 @@ test('cloud chat can send only the context selected for a personal question', as
 });
 
 test('cloud chat fails closed when the endpoint returns an error', async () => {
+  const failure = await PortfolioAI.requestCloudAnswer('https://example.supabase.co/chat', 'hello', 'context', async () => ({
+    ok: false,
+    status: 503,
+    json: async () => ({ error: 'Portfolio AI is temporarily unavailable', code: 'UPSTREAM_UNAVAILABLE' }),
+  })).then(() => null, error => error);
+
+  assert.equal(failure.status, 503);
+  assert.equal(failure.code, 'UPSTREAM_UNAVAILABLE');
   await assert.rejects(
     PortfolioAI.requestCloudAnswer('https://example.supabase.co/chat', 'hello', 'context', async () => ({ ok: false, status: 429 })),
     /request failed \(429\)/,
@@ -134,26 +142,27 @@ test('cloud chat fails closed when the endpoint returns an error', async () => {
 
 test('cloud chat rejects an upstream stream error after clearing any streamed partial answer', async () => {
   const deltas = [];
-  await assert.rejects(
-    PortfolioAI.requestCloudAnswer(
+  const failure = await PortfolioAI.requestCloudAnswer(
       'https://example.supabase.co/chat',
       'Tell me about Jio Fynd',
       'context',
-      async () => eventStream([delta('Partial answer'), 'event: error\ndata: {"error":"unavailable"}\n\n']),
+      async () => eventStream([delta('Partial answer'), 'event: error\ndata: {"error":"unavailable","code":"UPSTREAM_STREAM_INTERRUPTED"}\n\n']),
       chunk => deltas.push(chunk),
-    ),
-    /stream failed/,
-  );
+  ).then(() => null, error => error);
+  assert.match(failure.message, /stream failed/);
+  assert.equal(failure.code, 'UPSTREAM_STREAM_INTERRUPTED');
   assert.deepEqual(deltas, ['Partial answer']);
 });
 
 test('unavailable cloud chat fallback only links relevant sections and does not invent an answer', () => {
-  const answer = PortfolioAI.buildFallbackAnswer(['about.md', 'experience.md', 'about.md']);
+  const answer = PortfolioAI.buildFallbackAnswer(['about.md', 'experience.md', 'about.md'], 'unavailable');
 
-  assert.match(answer, /can’t reach the portfolio AI/i);
+  assert.match(answer, /temporarily unavailable/i);
+  assert.match(answer, /try again in a moment/i);
   assert.match(answer, /\[About me\]\(about\.md\)/);
   assert.match(answer, /\[Experience\]\(experience\.md\)/);
   assert.doesNotMatch(answer, /university|degree|education/i);
+  assert.match(PortfolioAI.buildFallbackAnswer(['contact.md'], 'rate-limited'), /request limit/i);
 });
 
 test('availability checks request English text input and output', async () => {

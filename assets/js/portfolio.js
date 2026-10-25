@@ -115,21 +115,65 @@ Built FastAPI and Flask services for ML pipelines, plus a Q-learning system for 
 Download my current AI/ML and GenAI resume below. It includes my experience, technical strengths, selected open-source work, and articles.`;
  function render(md){let raw=md.replace(/^### (.*)$/gm,'<h3>$1</h3>').replace(/^## (.*)$/gm,'<h2>$1</h2>').replace(/^# (.*)$/gm,'<h1>$1</h1>').replace(/^<div class="meta">(.*?)<\/div>$/gm,'<div class="meta">$1</div>').replace(/^> (.*)$/gm,'<blockquote>$1</blockquote>').replace(/^- (.*)$/gm,'<li>$1</li>');raw=raw.split(/\n\n+/).map(block=>{if(/^<(h[1-3]|div|blockquote|li|img)/.test(block))return block;if(block.startsWith('<li>'))return `<ul>${block}</ul>`;return `<p>${block}</p>`}).join('\n');return raw.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noreferrer">$1 ↗</a>')}
  const tree=[...document.querySelectorAll('.tree-file')],response=document.getElementById('response'),welcome=document.querySelector('.welcome');
- let chatGeneration=0;
+ let chatGeneration=0,lastCloudFailure=null;
  const resumePath='assets/files/Chirag_Shetty_Resume.pdf';
  const approvedExternalLinks=[...new Set(Object.values(files).flatMap(content=>[...content.matchAll(/\]\((https:\/\/[^)\s]+)\)/g)].map(match=>match[1])))];
- function renderResourceLinks(sectionNames){
+ function renderResourceLinks(sectionNames,excludedUrls=[]){
   const relevant=['projects.md','articles.md'].filter(name=>sectionNames.includes(name));
   if(!relevant.length)return '';
-  const links=relevant.flatMap(name=>[...files[name].matchAll(/^- \[([^\]]+)\]\((https:\/\/[^)\s]+)\)/gm)].map(([,label,url])=>`- [${label}](${url})`));
+  const excluded=new Set(excludedUrls);
+  const links=relevant.flatMap(name=>[...files[name].matchAll(/^- \[([^\]]+)\]\((https:\/\/[^)\s]+)\)/gm)].filter(([, ,url])=>!excluded.has(url)).map(([,label,url])=>`- [${label}](${url})`));
   return links.length?`<div class="portfolio-resource-links"><p><strong>Explore the links</strong></p>${window.PortfolioAI.renderAnswer(links.join('\n'),Object.keys(files),approvedExternalLinks)}</div>`:'';
  }
  const resumeCard=()=>`<a class="attachment-card" href="${resumePath}" download="Chirag_Shetty_Resume.pdf"><span class="pdf-badge">PDF</span><span class="attachment-name"><strong>Chirag_Shetty_Resume.pdf</strong><small>AI / ML Engineer · 2 pages</small></span><span class="download-icon" aria-hidden="true">↓</span></a>`;
  const sectionPrompts={'README.md':'Give me an overview','about.md':'Tell me about Chirag','jio-fynd.md':'Tell me about Chirag’s work at Jio Fynd','adagrad-ai.md':'Tell me about Chirag’s work at Adagrad AI','optisol.md':'Tell me about Chirag’s work at Optisol Business Solutions','projects.md':'Show me Chirag’s open-source work','articles.md':'Show me Chirag’s articles','experience.md':'Give me Chirag’s experience overview','toolkit.md':'What tools does Chirag work with?','resume.md':'Can you share Chirag’s resume?','contact.md':'How can I contact Chirag?'};
  function showFile(name){if(!files[name])return;tree.forEach(b=>b.classList.toggle('selected',b.dataset.file===name));welcome.hidden=true;response.hidden=false;const body=render(files[name])+(name==='resume.md'?resumeCard():'');response.innerHTML=`<div class="user-message">${sectionPrompts[name]||'Give me an overview'}</div><div class="assistant-message"><div class="assistant-avatar">✳</div><div class="assistant-content">${body}</div></div>`;if(innerWidth<=720)setSidebarOpen(false);document.querySelector('.chat-scroll').scrollTop=document.querySelector('.chat-scroll').scrollHeight}
  tree.forEach(button=>button.addEventListener('click',()=>showFile(button.dataset.file)));
- document.getElementById('newChatButton').addEventListener('click',()=>{chatGeneration++;response.hidden=true;response.replaceChildren();welcome.hidden=true;tree.forEach(button=>button.classList.remove('selected'));const input=document.getElementById('chatInput');input.value='';input.disabled=false;document.getElementById('sendButton').disabled=false;input.focus();if(innerWidth<=720)setSidebarOpen(false)});
- document.getElementById('searchButton').addEventListener('click',()=>{const q=prompt('Search portfolio sections');if(!q)return;const match=tree.find(button=>button.textContent.toLowerCase().includes(q.toLowerCase()));if(match)showFile(match.dataset.file)});
+ const chatInput=document.getElementById('chatInput'),sendButton=document.getElementById('sendButton');
+ function resizeComposer(){chatInput.style.height='auto';chatInput.style.height=`${Math.min(chatInput.scrollHeight,130)}px`;chatInput.style.overflowY=chatInput.scrollHeight>130?'auto':'hidden'}
+ function updateSendButton(){sendButton.disabled=chatInput.disabled||!chatInput.value.trim()}
+ chatInput.addEventListener('input',()=>{resizeComposer();updateSendButton()});
+ function startNewChat(){chatGeneration++;response.hidden=true;response.replaceChildren();welcome.hidden=true;tree.forEach(button=>button.classList.remove('selected'));chatInput.value='';chatInput.disabled=false;resizeComposer();updateSendButton();resetAiStatus();chatInput.focus();if(innerWidth<=720)setSidebarOpen(false)}
+ document.getElementById('newChatButton').addEventListener('click',startNewChat);
+ document.querySelector('.codex-brand').addEventListener('click',()=>showFile('README.md'));
+ const searchButton=document.getElementById('searchButton'),searchDialog=document.getElementById('searchDialog'),searchInput=document.getElementById('searchInput'),searchResults=document.getElementById('searchResults');
+ function renderSearchResults(query=''){
+  const normalized=normalizeText(query);searchResults.replaceChildren();
+  const matches=tree.filter(button=>!normalized||normalizeText(`${button.textContent} ${files[button.dataset.file]}`).includes(normalized));
+  if(!matches.length){const empty=document.createElement('p');empty.className='search-empty';empty.textContent=`No sections found for “${query.trim()}”. Try a company, skill, article, or project.`;searchResults.append(empty);return}
+  matches.forEach(button=>{const result=document.createElement('button');result.type='button';result.className='search-result';result.setAttribute('role','option');result.textContent=button.textContent.replace('◌','').trim();result.addEventListener('click',()=>{showFile(button.dataset.file);searchDialog.close()});searchResults.append(result)});
+ }
+ function openSearch(){renderSearchResults();searchButton.setAttribute('aria-expanded','true');searchDialog.showModal();searchInput.value='';searchInput.focus()}
+ document.getElementById('closeSearchButton').addEventListener('click',()=>searchDialog.close());
+ searchButton.addEventListener('click',openSearch);
+ searchInput.addEventListener('input',()=>renderSearchResults(searchInput.value));
+ searchInput.addEventListener('keydown',event=>{if(event.key==='Enter'){const first=searchResults.querySelector('.search-result');if(first){event.preventDefault();first.click()}}});
+ searchDialog.addEventListener('close',()=>{searchButton.setAttribute('aria-expanded','false');if(!document.getElementById('explorer').classList.contains('closed'))searchButton.focus()});
+ searchDialog.addEventListener('click',event=>{if(event.target===searchDialog)searchDialog.close()});
+ document.addEventListener('keydown',event=>{if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='k'){event.preventDefault();if(!searchDialog.open)openSearch()}});
+ const toast=document.getElementById('toast'),shareDialog=document.getElementById('shareDialog'),shareInput=document.getElementById('shareLinkInput');
+ shareInput.value=`${location.origin}${location.pathname}`;
+ let toastTimer;
+ function showToast(message){toast.textContent=message;toast.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{toast.hidden=true},2600)}
+ function openShareDialog(){shareDialog.showModal();shareInput.focus();shareInput.select()}
+ async function copyPortfolioLink(){try{if(!navigator.clipboard?.writeText)throw new Error('Clipboard unavailable');await navigator.clipboard.writeText(shareInput.value);showToast('Portfolio link copied.');return true}catch(_error){return false}}
+ document.getElementById('shareButton').addEventListener('click',async()=>{
+  if(typeof navigator.share==='function'){
+   try{await navigator.share({title:document.title,text:'Chirag Shetty’s portfolio',url:shareInput.value});return}
+   catch(error){if(error?.name==='AbortError')return}
+  }
+  openShareDialog();
+ });
+ document.getElementById('closeShareButton').addEventListener('click',()=>shareDialog.close());
+ document.getElementById('copyShareLinkButton').addEventListener('click',async()=>{if(await copyPortfolioLink())shareDialog.close();else{shareInput.focus();shareInput.select();showToast('Link selected. Copy it to share.')}});
+ shareDialog.addEventListener('close',()=>document.getElementById('shareButton').focus());
+ shareDialog.addEventListener('click',event=>{if(event.target===shareDialog)shareDialog.close()});
+ const moreButton=document.getElementById('moreButton'),moreMenu=document.getElementById('moreMenu');
+ function closeMoreMenu(restoreFocus=false){moreMenu.hidden=true;moreButton.setAttribute('aria-expanded','false');if(restoreFocus)moreButton.focus()}
+ moreButton.addEventListener('click',()=>{const opening=moreMenu.hidden;moreMenu.hidden=!opening;moreButton.setAttribute('aria-expanded',String(opening));if(opening)moreMenu.querySelector('[role="menuitem"]')?.focus()});
+ moreMenu.addEventListener('click',async event=>{const item=event.target.closest('[role="menuitem"]');if(!item)return;const action=item.dataset.menuAction;closeMoreMenu(true);if(action==='copy-link'&&!await copyPortfolioLink())openShareDialog()});
+ document.addEventListener('click',event=>{if(!event.target.closest('.more-wrap'))closeMoreMenu()});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!moreMenu.hidden)closeMoreMenu(true)});
  document.querySelectorAll('.suggestions button').forEach(button=>button.addEventListener('click',()=>showFile(button.dataset.file)));
  const explorer=document.getElementById('explorer'),explorerToggle=document.getElementById('explorerToggle'),sidebarCollapseToggle=document.getElementById('sidebarCollapseToggle');
  function setSidebarOpen(isOpen){explorer.classList.toggle('closed',!isOpen);for(const button of [explorerToggle,sidebarCollapseToggle]){button.setAttribute('aria-expanded',String(isOpen));button.setAttribute('aria-label',isOpen?'Collapse sidebar':'Open sidebar');button.textContent=isOpen?'◧':'☰'}}
@@ -170,10 +214,12 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
   const safeQuestion=question.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const resumeRequest=/\b(resume|cv|curriculum vitae)\b/i.test(question);
   response.insertAdjacentHTML('beforeend',`<div class="user-message">${safeQuestion}</div>`);
-  const pending=document.createElement('div');pending.className='assistant-message';pending.innerHTML='<div class="assistant-avatar">✳</div><div class="assistant-content ai-thinking">Thinking…</div>';response.append(pending);
-  input.value='';input.disabled=true;sendButton.disabled=true;
+  lastCloudFailure=null;
+  const pending=document.createElement('div');pending.className='assistant-message';pending.innerHTML='<div class="assistant-avatar">✳</div><div class="assistant-content"><div class="thinking-indicator"><span class="thinking-label">Thinking…</span></div><div class="assistant-answer" aria-live="polite"></div></div>';response.append(pending);
+  input.value='';resizeComposer();input.disabled=true;sendButton.disabled=true;
   const pendingContent=pending.querySelector('.assistant-content');
-  const streamer=window.PortfolioAI.createTextStreamer(chunk=>{if(generation!==chatGeneration)return;pendingContent.classList.remove('ai-thinking');pendingContent.textContent+=chunk});
+  const answerLine=pending.querySelector('.assistant-answer'),thinking=pending.querySelector('.thinking-indicator');let answerStarted=false;
+  const streamer=window.PortfolioAI.createTextStreamer(chunk=>{if(generation!==chatGeneration)return;if(!answerStarted){answerStarted=true;thinking.hidden=true}answerLine.textContent+=chunk});
   let resourceFiles=[];
   try{
    let answer;
@@ -191,18 +237,24 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
      const relevantFiles=matches.map(topic=>topic.key);
      resourceFiles=relevantFiles;
      const cloudAnswer=await answerWithCloud(question,relevantFiles,chunk=>streamer.push(chunk));
-     if(!cloudAnswer){streamer.reset();pendingContent.textContent=''}
+     if(!cloudAnswer){streamer.reset();answerLine.textContent=''}
      const nanoAnswer=cloudAnswer||await answerWithNano(question,chunk=>streamer.push(chunk));
      if(nanoAnswer)await streamer.finish();
-     else {streamer.reset();pendingContent.textContent=''}
-     if(nanoAnswer)answer=window.PortfolioAI.renderAnswer(nanoAnswer,Object.keys(files),approvedExternalLinks)+renderResourceLinks(resourceFiles);
-     else answer=window.PortfolioAI.renderAnswer(window.PortfolioAI.buildFallbackAnswer(relevantFiles),Object.keys(files),approvedExternalLinks)+renderResourceLinks(resourceFiles);
+     else {streamer.reset();answerLine.textContent=''}
+     if(nanoAnswer){const renderedAnswer=window.PortfolioAI.renderAnswer(nanoAnswer,Object.keys(files),approvedExternalLinks);const linkedUrls=[...renderedAnswer.matchAll(/href="([^"]+)"/g)].map(([,url])=>url);answer=renderedAnswer+renderResourceLinks(resourceFiles,linkedUrls)}
+     else{
+      const rateLimited=lastCloudFailure?.status===429||['RATE_LIMITED','UPSTREAM_RATE_LIMITED'].includes(lastCloudFailure?.code);
+      setAiStatus(rateLimited?'AI request limit reached · try again later':lastCloudFailure?'AI temporarily unavailable · try again':'On-device AI unavailable · browse sections');
+      answer=window.PortfolioAI.renderAnswer(window.PortfolioAI.buildFallbackAnswer(relevantFiles,rateLimited?'rate-limited':'unavailable'),Object.keys(files),approvedExternalLinks)+renderResourceLinks(resourceFiles);
+     }
     }
    }
    if(generation!==chatGeneration)return;
    pending.remove();response.insertAdjacentHTML('beforeend',`<div class="assistant-message"><div class="assistant-avatar">✳</div><div class="assistant-content">${answer}</div></div>`);
+  }catch(_error){
+   if(generation===chatGeneration){pendingContent.classList.remove('ai-thinking');pendingContent.textContent='I couldn’t finish that response. Please try again.'}
   }finally{
-   pending.remove();if(generation===chatGeneration){input.disabled=false;sendButton.disabled=false;document.querySelector('.chat-scroll').scrollTop=document.querySelector('.chat-scroll').scrollHeight}
+   pending.remove();if(generation===chatGeneration){input.disabled=false;updateSendButton();resizeComposer();document.querySelector('.chat-scroll').scrollTop=document.querySelector('.chat-scroll').scrollHeight}
   }
  }
 
@@ -217,6 +269,7 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
   else if(status==='downloading')setAiStatus('Gemini Nano · preparing on-device AI');
   else setAiStatus('On-device AI unavailable · local guide active');
  }
+ function resetAiStatus(){if(chatEndpoint)setAiStatus('AI assistant ready');else setModelStatus(aiAvailability)}
  async function checkNanoAvailability(){
   const status=await window.PortfolioAI.getAvailability(window.LanguageModel);
   setModelStatus(status);
@@ -226,10 +279,11 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
   try{
    setAiStatus('Asking the portfolio assistant…');
    const answer=await window.PortfolioAI.requestCloudAnswer(chatEndpoint,question,window.PortfolioAI.buildPortfolioContext(files,relevantFiles),globalThis.fetch,onDelta);
-   if(answer)setAiStatus('Portfolio AI · OpenRouter free models');
+   if(answer)setAiStatus('AI assistant ready');
    return answer;
   }catch(_error){
-   setAiStatus('Cloud AI unavailable · trying local options…');
+   lastCloudFailure=_error;
+   setAiStatus(_error.status===429?'AI request limit reached · try again later':'AI temporarily unavailable · trying another option…');
    return null;
   }
  }
@@ -261,7 +315,7 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
    return null;
   }
  }
- if(chatEndpoint)setAiStatus('Portfolio AI · OpenRouter free models');
+ if(chatEndpoint)setAiStatus('AI assistant ready');
  else checkNanoAvailability();
  response.addEventListener('click',event=>{
   const link=event.target.closest('a[data-file]');

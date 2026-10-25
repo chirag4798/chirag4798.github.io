@@ -32,7 +32,14 @@
    body:JSON.stringify({question,context}),
    signal:typeof AbortSignal!=='undefined'&&AbortSignal.timeout?AbortSignal.timeout(35000):undefined
   });
-  if(!response.ok)throw new Error(`Portfolio AI request failed (${response.status})`);
+  if(!response.ok){
+   let payload={};
+   try{if(typeof response.json==='function')payload=await response.json()}catch(_error){}
+   const error=new Error(`Portfolio AI request failed (${response.status})`);
+   error.status=response.status;
+   error.code=typeof payload.code==='string'?payload.code:null;
+   throw error;
+  }
   if(!response.body||typeof response.body.getReader!=='function')throw new Error('Portfolio AI stream is unavailable');
   const reader=response.body.getReader(),decoder=new TextDecoder();
   let buffer='',answer='',eventName='message';
@@ -45,7 +52,7 @@
    if(!data)return;
    let payload;
    try{payload=JSON.parse(data)}catch(_error){throw new Error('Portfolio AI stream is invalid')}
-   if(eventName==='error')throw new Error('Portfolio AI stream failed');
+   if(eventName==='error'){const error=new Error('Portfolio AI stream failed');error.code=typeof payload.code==='string'?payload.code:'UPSTREAM_STREAM_FAILED';throw error}
    if(eventName==='delta'&&typeof payload.text==='string'){
     answer+=payload.text;
     if(answer.length>12000)throw new Error('Portfolio AI response is too long');
@@ -126,7 +133,7 @@
   }).join('');
  }
 
- function buildFallbackAnswer(sectionNames){
+ function buildFallbackAnswer(sectionNames,reason){
   const labels={
    'README.md':'Portfolio overview','about.md':'About me','jio-fynd.md':'Jio Fynd','adagrad-ai.md':'Adagrad AI',
    'optisol.md':'Optisol Business Solutions','projects.md':'Open-source projects','articles.md':'Articles',
@@ -134,7 +141,8 @@
   };
   const sections=[...new Set(Array.isArray(sectionNames)?sectionNames:[])].filter(name=>labels[name]);
   const links=sections.map(name=>`[${labels[name]}](${name})`).join(', ');
-  return `I can’t reach the portfolio AI right now. ${links?`You can still explore ${links}.`:'Please try again shortly or browse the portfolio sections.'}`;
+  const message=reason==='rate-limited'?'The portfolio assistant has reached a request limit. Please try again later.':'The portfolio assistant is temporarily unavailable. Please try again in a moment.';
+  return `${message} ${links?`You can still explore ${links}.`:'Please browse the portfolio sections.'}`;
  }
 
  const api={buildPortfolioContext,buildSystemPrompt,requestCloudAnswer,getAvailability,createSession,createTextStreamer,renderAnswer,buildFallbackAnswer};
