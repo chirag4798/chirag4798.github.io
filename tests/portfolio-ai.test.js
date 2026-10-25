@@ -1,6 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const PortfolioAI = require('../assets/js/portfolio-ai.js');
+const portfolioClientSource = fs.readFileSync(require.resolve('../assets/js/portfolio.js'), 'utf8');
 
 const files = {
   'README.md': '# Overview\nProduction AI work. [Portfolio](https://chirag4798.github.io/)',
@@ -83,6 +85,11 @@ test('daily LLM quota exhaustion is distinguished from other rate limits', () =>
   assert.equal(PortfolioAI.isUpstreamRateLimitError({ code: 'UPSTREAM_DAILY_QUOTA_EXHAUSTED' }), true);
   assert.equal(PortfolioAI.isUpstreamRateLimitError({ code: 'UPSTREAM_RATE_LIMITED' }), true);
   assert.equal(PortfolioAI.isUpstreamRateLimitError({ code: 'RATE_LIMITED' }), false);
+});
+
+test('daily quota state is server-owned and is not cached in browser storage', () => {
+  assert.doesNotMatch(portfolioClientSource, /portfolio-llm-quota-|localStorage/);
+  assert.match(portfolioClientSource, /const cloudAnswer=await answerWithCloud\(/);
 });
 
 test('incomplete model output is routed to static fallback without marking quota exhaustion', () => {

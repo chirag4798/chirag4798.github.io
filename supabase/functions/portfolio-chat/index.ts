@@ -80,6 +80,37 @@ async function checkRateLimit(ipHash: string, projectUrl: string, serviceKey: st
   return await response.json() === true;
 }
 
+async function callServiceRpc(name: string, projectUrl: string, serviceKey: string): Promise<Response> {
+  const response = await fetch(`${projectUrl}/rest/v1/rpc/${name}`, {
+    method: 'POST',
+    headers: {
+      'apikey': serviceKey,
+      'Authorization': `Bearer ${serviceKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: '{}',
+    signal: AbortSignal.timeout(5000),
+  });
+  if (!response.ok) throw new Error('Quota state service unavailable');
+  return response;
+}
+
+async function claimQuotaProbe(projectUrl: string, serviceKey: string): Promise<'allowed' | 'blocked' | 'probe'> {
+  const response = await callServiceRpc('claim_portfolio_llm_quota_probe', projectUrl, serviceKey);
+  const decision = await response.json();
+  if (decision !== 'allowed' && decision !== 'blocked' && decision !== 'probe') {
+    throw new Error('Quota state service returned an invalid decision');
+  }
+  return decision;
+}
+
+async function updateQuotaState(action: 'mark' | 'clear', projectUrl: string, serviceKey: string): Promise<void> {
+  const rpc = action === 'mark'
+    ? 'mark_portfolio_llm_quota_exhausted'
+    : 'clear_portfolio_llm_quota_exhausted';
+  await callServiceRpc(rpc, projectUrl, serviceKey);
+}
+
 function streamAnswer(upstreamBody: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
   const reader = upstreamBody.getReader();
   const encoder = new TextEncoder();
@@ -333,6 +364,17 @@ Deno.serve(async (request) => {
     return jsonResponse({ error: 'Portfolio AI protection is unavailable', code: 'PROTECTION_UNAVAILABLE' }, 503, origin);
   }
 
+  let quotaDecision: 'allowed' | 'blocked' | 'probe';
+  try {
+    quotaDecision = await claimQuotaProbe(projectUrl, serviceKey);
+    if (quotaDecision === 'blocked') {
+      return jsonResponse({ error: 'The daily LLM quota is currently exhausted', code: 'UPSTREAM_DAILY_QUOTA_EXHAUSTED' }, 503, origin);
+    }
+  } catch (error) {
+    console.error('Portfolio LLM quota check failed', { errorName: error instanceof Error ? error.name : 'UnknownError' });
+    return jsonResponse({ error: 'Portfolio AI quota status is unavailable', code: 'QUOTA_STATE_UNAVAILABLE' }, 503, origin);
+  }
+
   try {
     const upstreamBody = JSON.stringify({
       model: 'openrouter/free',
@@ -370,6 +412,14 @@ Deno.serve(async (request) => {
         retryAfter: upstream.headers.get('retry-after'),
         ...providerError,
       });
+      if (providerError.dailyQuotaExhausted) {
+        try {
+          await updateQuotaState('mark', projectUrl, serviceKey);
+        } catch (error) {
+          console.error('Portfolio LLM quota state update failed', { errorName: error instanceof Error ? error.name : 'UnknownError' });
+          return jsonResponse({ error: 'Portfolio AI quota status is unavailable', code: 'QUOTA_STATE_UNAVAILABLE' }, 503, origin);
+        }
+      }
       const isRequestRejected = upstream.status >= 400 && upstream.status < 500 && upstream.status !== 429;
       const code = providerError.dailyQuotaExhausted
         ? 'UPSTREAM_DAILY_QUOTA_EXHAUSTED'
@@ -378,11 +428,20 @@ Deno.serve(async (request) => {
           : isRequestRejected
             ? 'UPSTREAM_REQUEST_REJECTED'
             : 'UPSTREAM_UNAVAILABLE';
-      return jsonResponse({ error: 'Portfolio AI is temporarily unavailable', code }, isRequestRejected ? 502 : 503, origin);
+      const status = providerError.dailyQuotaExhausted ? 503 : isRequestRejected ? 502 : 503;
+      return jsonResponse({ error: 'Portfolio AI is temporarily unavailable', code }, status, origin);
     }
     if (!upstream.body) {
       console.error('OpenRouter returned an empty response body');
       return jsonResponse({ error: 'Portfolio AI returned no answer', code: 'EMPTY_UPSTREAM_RESPONSE' }, 502, origin);
+    }
+    if (quotaDecision === 'probe') {
+      try {
+        await updateQuotaState('clear', projectUrl, serviceKey);
+      } catch (error) {
+        console.error('Portfolio LLM quota recovery update failed', { errorName: error instanceof Error ? error.name : 'UnknownError' });
+        return jsonResponse({ error: 'Portfolio AI quota status is unavailable', code: 'QUOTA_STATE_UNAVAILABLE' }, 503, origin);
+      }
     }
     return eventStreamResponse(streamAnswer(upstream.body), origin);
   } catch (error) {

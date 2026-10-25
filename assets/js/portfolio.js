@@ -116,10 +116,6 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
  function render(md){let raw=md.replace(/^### (.*)$/gm,'<h3>$1</h3>').replace(/^## (.*)$/gm,'<h2>$1</h2>').replace(/^# (.*)$/gm,'<h1>$1</h1>').replace(/^<div class="meta">(.*?)<\/div>$/gm,'<div class="meta">$1</div>').replace(/^> (.*)$/gm,'<blockquote>$1</blockquote>').replace(/^- (.*)$/gm,'<li>$1</li>');raw=raw.split(/\n\n+/).map(block=>{if(/^<(h[1-3]|div|blockquote|li|img)/.test(block))return block;if(block.startsWith('<li>'))return `<ul>${block}</ul>`;return `<p>${block}</p>`}).join('\n');return raw.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noreferrer">$1 ↗</a>')}
  const tree=[...document.querySelectorAll('.tree-file')],response=document.getElementById('response'),welcome=document.querySelector('.welcome');
  let chatGeneration=0,lastCloudFailure=null;
- const dailyQuotaStorageKey=`portfolio-llm-quota-${new Date().toISOString().slice(0,10)}`;
- function readDailyQuotaState(){try{return localStorage.getItem(dailyQuotaStorageKey)==='exhausted'}catch(_error){return false}}
- function rememberDailyQuotaState(){try{localStorage.setItem(dailyQuotaStorageKey,'exhausted')}catch(_error){}}
- let dailyLlmQuotaExhausted=readDailyQuotaState();
  const resumePath='assets/files/Chirag_Shetty_Resume.pdf';
  const approvedExternalLinks=[...new Set(Object.values(files).flatMap(content=>[...content.matchAll(/\]\((https:\/\/[^)\s]+)\)/g)].map(match=>match[1])))];
  function renderResourceLinks(sectionNames,excludedUrls=[]){
@@ -245,15 +241,11 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
     }else{
      const relevantFiles=matches.map(topic=>topic.key);
      resourceFiles=relevantFiles;
-     const cloudAnswer=dailyLlmQuotaExhausted?null:await answerWithCloud(question,relevantFiles,chunk=>streamer.push(chunk));
-     if(window.PortfolioAI.isDailyQuotaError(lastCloudFailure)){
-      dailyLlmQuotaExhausted=true;
-      rememberDailyQuotaState();
-     }
-     const upstreamRateLimited=dailyLlmQuotaExhausted||window.PortfolioAI.isUpstreamRateLimitError(lastCloudFailure);
+     const cloudAnswer=await answerWithCloud(question,relevantFiles,chunk=>streamer.push(chunk));
+     const dailyQuota=window.PortfolioAI.isDailyQuotaError(lastCloudFailure);
+     const upstreamRateLimited=window.PortfolioAI.isUpstreamRateLimitError(lastCloudFailure);
      const incompleteModelOutput=window.PortfolioAI.isIncompleteModelOutputError(lastCloudFailure);
      if(upstreamRateLimited||incompleteModelOutput){
-      const dailyQuota= dailyLlmQuotaExhausted;
       const notice=dailyQuota?'The LLM quota for today is finished. You’re viewing the static answers.':upstreamRateLimited?'The LLM is rate-limited right now. You’re viewing the static answers.':'The AI response couldn’t be completed. You’re viewing the static answers.';
       setAiStatus(dailyQuota?'LLM daily quota finished · static answers':upstreamRateLimited?'LLM temporarily rate-limited · static answers':'AI response incomplete · static answers');
       const noticeNode=document.createElement('p');noticeNode.className='llm-quota-notice';noticeNode.setAttribute('role','note');noticeNode.textContent=notice;
@@ -296,7 +288,7 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
   else if(status==='downloading')setAiStatus('Gemini Nano · preparing on-device AI');
   else setAiStatus('On-device AI unavailable · local guide active');
  }
- function resetAiStatus(){if(chatEndpoint)setAiStatus(dailyLlmQuotaExhausted?'LLM daily quota finished · static answers':'AI assistant ready');else setModelStatus(aiAvailability)}
+ function resetAiStatus(){if(chatEndpoint)setAiStatus('AI assistant ready');else setModelStatus(aiAvailability)}
  async function checkNanoAvailability(){
   const status=await window.PortfolioAI.getAvailability(window.LanguageModel);
   setModelStatus(status);
@@ -342,7 +334,7 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
    return null;
   }
  }
- if(chatEndpoint)setAiStatus(dailyLlmQuotaExhausted?'LLM daily quota finished · static answers':'AI assistant ready');
+ if(chatEndpoint)setAiStatus('AI assistant ready');
  else checkNanoAvailability();
  response.addEventListener('click',event=>{
   const link=event.target.closest('a[data-file]');
