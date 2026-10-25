@@ -265,6 +265,6 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
  let wasMobile=innerWidth<=720;if(wasMobile)setSidebarOpen(false);window.addEventListener('resize',()=>{const isMobile=innerWidth<=720;if(isMobile!==wasMobile){setSidebarOpen(!isMobile);wasMobile=isMobile}});
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const welcomeText=document.getElementById('welcomeTitleText');const welcomeCursor=document.getElementById('welcomeTitleCursor');
- function typeWelcomeTitle(){const prompt='What would you like to explore?';if(reduced){welcomeText.textContent=prompt;return}welcomeCursor.classList.add('is-active');let position=0;const typing=setInterval(()=>{welcomeText.textContent=prompt.slice(0,++position);if(position===prompt.length)clearInterval(typing)},55)}
+ function typeWelcomeTitle(){const prompt='What would you like to explore?';if(!reduced)welcomeCursor.classList.add('is-active');let position=0;const typing=setInterval(()=>{welcomeText.textContent=prompt.slice(0,++position);if(position===prompt.length)clearInterval(typing)},reduced?32:55)}
  setTimeout(()=>{document.body.classList.add('ready');document.body.classList.remove('booting');typeWelcomeTitle()},reduced?80:950);
 })();
