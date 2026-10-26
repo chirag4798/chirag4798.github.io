@@ -251,7 +251,11 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
   const streamer=window.PortfolioAI.createTextStreamer(chunk=>{if(generation!==chatGeneration)return;if(!answerStarted){answerStarted=true;thinking.hidden=true}answerLine.textContent+=chunk});
   let resourceFiles=[],answer='',typeAnswer=false;
   try{
-   if(resumeRequest){
+   if(window.PortfolioAI.containsKorean(question)){
+    answer='<p>한국어로 대화하고 싶으시면 제 여자친구 하영 씨와 이야기해 주세요 ㅋㅋ</p>';
+    typeAnswer=true;
+   }
+   else if(resumeRequest){
     const resumeIntro='Here’s my current resume. You can download the PDF here:';
     answer=`<p>${resumeIntro}</p>${resumeCard()}`;
     typeAnswer=true;

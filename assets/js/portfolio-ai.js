@@ -2,6 +2,10 @@
  const inputOptions=[{type:'text',languages:['en']}];
  const outputOptions=[{type:'text',languages:['en']}];
 
+ function containsKorean(text){
+  return /[\u1100-\u11FF\u3130-\u318F\uA960-\uA97F\uAC00-\uD7AF\uD7B0-\uD7FF]/u.test(String(text||''));
+ }
+
  function plainText(content){
   return String(content).replace(/<img\b[^>]*\balt=["']([^"']*)["'][^>]*>/gi,'$1').replace(/<[^>]*>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim();
  }
@@ -165,7 +169,7 @@
   return `${message} ${links?`You can still explore ${links}.`:'Please browse the portfolio sections.'}`;
  }
 
- const api={buildPortfolioContext,buildSystemPrompt,requestCloudAnswer,getAvailability,createSession,createTextStreamer,isDailyQuotaError,isUpstreamRateLimitError,isIncompleteModelOutputError,streamStaticText,renderAnswer,buildFallbackAnswer};
+ const api={containsKorean,buildPortfolioContext,buildSystemPrompt,requestCloudAnswer,getAvailability,createSession,createTextStreamer,isDailyQuotaError,isUpstreamRateLimitError,isIncompleteModelOutputError,streamStaticText,renderAnswer,buildFallbackAnswer};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
  if(typeof globalThis!=='undefined')globalThis.PortfolioAI=api;
 })();

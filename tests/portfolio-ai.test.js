@@ -13,6 +13,22 @@ const files = {
   'portfolio-profile.md': '# Profile\nVellore Institute of Technology. Age: 28 as of October 2026. Born July 4, 1998. Ethnicity: Indian. Blood group: A+. [GitHub](https://github.com/chirag4798)',
 };
 
+test('Korean script detection catches syllables and jamo but not English', () => {
+  assert.equal(PortfolioAI.containsKorean('안녕하세요'), true);
+  assert.equal(PortfolioAI.containsKorean('Please say 안녕'), true);
+  assert.equal(PortfolioAI.containsKorean('한ㄱㅜㄱ'), true);
+  assert.equal(PortfolioAI.containsKorean('Please tell me about Chirag'), false);
+});
+
+test('Korean chat input uses the local girlfriend reply before cloud or Nano AI', () => {
+  const sendFlow = portfolioClientSource.match(/async function send\(\)\{([\s\S]*?)\n \}\n\n const aiStatus/)?.[1] || '';
+
+  assert.match(sendFlow, /if\(window\.PortfolioAI\.containsKorean\(question\)\)/);
+  assert.match(sendFlow, /한국어로 대화하고 싶으시면 제 여자친구 하영 씨와 이야기해 주세요 ㅋㅋ/);
+  assert.ok(sendFlow.indexOf('containsKorean(question)') < sendFlow.indexOf('answerWithCloud(question'));
+  assert.ok(sendFlow.indexOf('containsKorean(question)') < sendFlow.indexOf('answerWithNano(question'));
+});
+
 function eventStream(events, onFirstChunk) {
   const encoder = new TextEncoder();
   let completed = false;
