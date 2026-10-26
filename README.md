@@ -17,7 +17,7 @@ This portfolio uses a Codex-inspired chat workspace. Choose a section from the s
 - `resume.md` — downloadable PDF resume
 - `contact.md` — ways to connect
 
-The one-page resume is available at `assets/files/Chirag_Shetty_Resume_One_Page.pdf`. The chat provides this file when visitors ask for a resume or CV.
+The one-page resume is available at `assets/files/Chirag_Shetty_Resume.pdf`. The chat provides this file when visitors ask for a resume or CV.
 
 ## Chat AI setup
 
