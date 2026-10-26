@@ -61,7 +61,7 @@ Contributed a C++ BYTETrack port integrated with NVIDIA DeepStream; built Shop t
 - Shop the Look article: [Medium article](https://chirag4798.medium.com/shop-the-look-8d686bde7de8)
 - LinkedIn: [linkedin.com/in/chirag--shetty](https://www.linkedin.com/in/chirag--shetty/)
 - Email: chirag4798@gmail.com
-- Resume PDF: assets/files/Chirag_Shetty_Resume.pdf
+- Resume PDF: assets/files/Chirag_Shetty_Resume_One_Page.pdf
 - Phone listed on the resume: +91-9092866690`;
  files['jio-fynd.md']=`# Jio Fynd
 
@@ -116,7 +116,7 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
  function render(md){let raw=md.replace(/^### (.*)$/gm,'<h3>$1</h3>').replace(/^## (.*)$/gm,'<h2>$1</h2>').replace(/^# (.*)$/gm,'<h1>$1</h1>').replace(/^<div class="meta">(.*?)<\/div>$/gm,'<div class="meta">$1</div>').replace(/^> (.*)$/gm,'<blockquote>$1</blockquote>').replace(/^- (.*)$/gm,'<li>$1</li>');raw=raw.split(/\n\n+/).map(block=>{if(/^<(h[1-3]|div|blockquote|li|img)/.test(block))return block;if(block.startsWith('<li>'))return `<ul>${block}</ul>`;return `<p>${block}</p>`}).join('\n');return raw.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\[([^\]]+)\]\(([^)]+)\)/g,(match,label,target)=>files[target]?`<a href="#${target}" data-file="${target}">${label}</a>`:`<a href="${target}" target="_blank" rel="noreferrer">${label} ↗</a>`)}
  const tree=[...document.querySelectorAll('.tree-file')],response=document.getElementById('response'),welcome=document.querySelector('.welcome');
  let chatGeneration=0,lastCloudFailure=null;
- const resumePath='assets/files/Chirag_Shetty_Resume.pdf';
+ const resumePath='assets/files/Chirag_Shetty_Resume_One_Page.pdf';
  const approvedExternalLinks=[...new Set(Object.values(files).flatMap(content=>[...content.matchAll(/\]\((https:\/\/[^)\s]+)\)/g)].map(match=>match[1])))];
  function renderResourceLinks(sectionNames,excludedUrls=[]){
   const relevant=['projects.md','articles.md'].filter(name=>sectionNames.includes(name));
@@ -128,7 +128,7 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
  function buildStaticTopicAnswer(topics){
   return topics.map(topic=>render(files[topic.key])).join('<hr>');
  }
- const resumeCard=()=>`<a class="attachment-card" href="${resumePath}" download="Chirag_Shetty_Resume.pdf"><span class="pdf-badge">PDF</span><span class="attachment-name"><strong>Chirag_Shetty_Resume.pdf</strong><small>AI / ML Engineer · 2 pages</small></span><span class="download-icon" aria-hidden="true">↓</span></a>`;
+ const resumeCard=()=>`<a class="attachment-card" href="${resumePath}" download="Chirag_Shetty_Resume_One_Page.pdf"><span class="pdf-badge">PDF</span><span class="attachment-name"><strong>Chirag_Shetty_Resume_One_Page.pdf</strong><small>AI / ML Engineer · 1 page</small></span><span class="download-icon" aria-hidden="true">↓</span></a>`;
  const sectionPrompts={'README.md':'Give me an overview','about.md':'Tell me about Chirag','jio-fynd.md':'Tell me about Chirag’s work at Jio Fynd','adagrad-ai.md':'Tell me about Chirag’s work at Adagrad AI','optisol.md':'Tell me about Chirag’s work at Optisol Business Solutions','projects.md':'Show me Chirag’s open-source work','articles.md':'Show me Chirag’s articles','experience.md':'Give me Chirag’s experience overview','toolkit.md':'What tools does Chirag work with?','resume.md':'Can you share Chirag’s resume?','contact.md':'How can I contact Chirag?'};
  async function typeRichContent(content,generation){
   const deferredCards=[...content.querySelectorAll('.attachment-card')];
