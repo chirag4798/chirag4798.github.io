@@ -235,6 +235,12 @@ test('newest philosophy essay appears in a bonus section after regular articles'
   assert.ok(articles.includes(`[Who am I?](${articleUrl})`));
 });
 
+test('share and copy links use the canonical public portfolio URL', () => {
+  assert.match(portfolioClientSource, /const portfolioUrl=document\.querySelector\('meta\[property="og:url"\]'\)\?\.content\|\|'https:\/\/chirag4798\.github\.io\/'/);
+  assert.match(portfolioClientSource, /shareInput\.value=portfolioUrl/);
+  assert.doesNotMatch(portfolioClientSource, /shareInput\.value=`\$\{location\.origin\}/);
+});
+
 test('sidebar pages and static chat answers use the typewriter without a blue textarea outline', () => {
   assert.match(portfolioClientSource, /async function typeRichContent\(/);
   assert.match(portfolioClientSource, /void typeRichContent\(response\.querySelector\('\.assistant-content'\),generation\)/);

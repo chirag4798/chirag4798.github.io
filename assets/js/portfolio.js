@@ -180,7 +180,8 @@ Download my current AI/ML and GenAI resume below. It includes my experience, tec
  searchDialog.addEventListener('click',event=>{if(event.target===searchDialog)searchDialog.close()});
  document.addEventListener('keydown',event=>{if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='k'){event.preventDefault();if(!searchDialog.open)openSearch()}});
  const toast=document.getElementById('toast'),shareDialog=document.getElementById('shareDialog'),shareInput=document.getElementById('shareLinkInput');
- shareInput.value=`${location.origin}${location.pathname}`;
+ const portfolioUrl=document.querySelector('meta[property="og:url"]')?.content||'https://chirag4798.github.io/';
+ shareInput.value=portfolioUrl;
  let toastTimer;
  function showToast(message){toast.textContent=message;toast.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{toast.hidden=true},2600)}
  function openShareDialog(){shareDialog.showModal();shareInput.focus();shareInput.select()}
